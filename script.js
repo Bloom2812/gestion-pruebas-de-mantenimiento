@@ -13802,52 +13802,82 @@ async function generateSingleWorkOrderReport(explicitWoId = null) {
                 doc.addPage();
                 drawHeader('Anexo: Registro Fotográfico de Actividades');
 
-                let imgY = 140;
-                const maxImages = 5;
-                const imagesToProcess = order.images.slice(0, maxImages);
-                const targetWidthPt = 8.5 * 28.346; // 8.5 cm to points
+                let startY = 140;
+                let currentY = startY;
+                const imagesToProcess = order.images; // Process all images
 
-                for (let idx = 0; idx < imagesToProcess.length; idx++) {
-                    const img = imagesToProcess[idx];
+                // Adjust sizes for two images side by side
+                const safeMargin = typeof margin !== 'undefined' ? margin : 40;
+                const usableWidth = pageWidth - (safeMargin * 2);
+                const gap = 20; // 20pt gap between images
+                const targetWidthPt = (usableWidth - gap) / 2;
 
-                    // 2 images per page (one above the other)
-                    if (idx > 0 && idx % 2 === 0) {
+                // Max height to ensure they fit nicely, say 4 rows per page (max 200pt height)
+                const maxHeightPt = 200;
+
+                for (let idx = 0; idx < imagesToProcess.length; idx += 2) {
+                    // Start a new page if we are out of space
+                    if (currentY > doc.internal.pageSize.getHeight() - 250 && idx > 0) {
                         doc.addPage();
                         drawHeader('Anexo: Registro Fotográfico de Actividades');
-                        imgY = 140;
+                        currentY = 140;
                     }
 
-                    try {
-                        // useRetry = true to handle Firebase optimization naming and delay
-                        const imgResult = await imageUrlToBase64(img.url, true);
-                        if (imgResult) {
-                            let finalW = targetWidthPt;
-                            let finalH = (imgResult.height * finalW) / imgResult.width;
+                    let rowMaxHeight = 0;
 
-                            // Prevent image from being too tall (max 300pt)
-                            if (finalH > 300) {
-                                finalH = 300;
-                                finalW = (imgResult.width * finalH) / imgResult.height;
+                    // Process two images (left and right)
+                    for (let col = 0; col < 2; col++) {
+                        const imgIdx = idx + col;
+                        if (imgIdx >= imagesToProcess.length) break;
+
+                        const img = imagesToProcess[imgIdx];
+                        const imgX = safeMargin + col * (targetWidthPt + gap);
+
+                        try {
+                            // Convert standard firebase urls to proxy ones directly to ensure load
+                            let urlToFetch = img.url;
+                            if (urlToFetch.includes('firebasestorage.googleapis.com')) {
+                                urlToFetch = `https://wsrv.nl/url=${encodeURIComponent(urlToFetch)}&output=jpg&q=80`;
                             }
 
-                            const centerX = (pageWidth - finalW) / 2;
-                            doc.addImage(imgResult.data, 'JPEG', centerX, imgY, finalW, finalH, undefined, 'FAST');
+                            // Use retry logic for optimized images
+                            const imgResult = await imageUrlToBase64(urlToFetch, true);
 
+                            if (imgResult) {
+                                let finalW = targetWidthPt;
+                                let finalH = (imgResult.height * finalW) / imgResult.width;
+
+                                if (finalH > maxHeightPt) {
+                                    finalH = maxHeightPt;
+                                    finalW = (imgResult.width * finalH) / imgResult.height;
+                                }
+
+                                // Center image within its column block
+                                const finalX = imgX + (targetWidthPt - finalW) / 2;
+
+                                doc.addImage(imgResult.data, 'JPEG', finalX, currentY, finalW, finalH, undefined, 'FAST');
+
+                                doc.setFontSize(10);
+                                doc.setFont(undefined, 'italic');
+                                const caption = img.caption || `Imagen ${imgIdx + 1}`;
+                                const splitCaption = doc.splitTextToSize(caption, targetWidthPt);
+                                doc.text(splitCaption, imgX + targetWidthPt / 2, currentY + finalH + 15, { align: 'center' });
+
+                                const totalBlockHeight = finalH + 15 + (splitCaption.length * 12);
+                                if (totalBlockHeight > rowMaxHeight) {
+                                    rowMaxHeight = totalBlockHeight;
+                                }
+                            } else {
+                                throw new Error("Base64 conversion failed");
+                            }
+                        } catch (err) {
+                            console.error("Error adding activity image to PDF:", err);
                             doc.setFontSize(10);
-                            doc.setFont(undefined, 'italic');
-                            const caption = img.caption || `Imagen ${idx + 1}`;
-                            const splitCaption = doc.splitTextToSize(caption, contentWidth);
-                            doc.text(splitCaption, pageWidth / 2, imgY + finalH + 15, { align: 'center' });
-                            imgY += finalH + 60;
-                        } else {
-                            throw new Error("Base64 conversion failed");
+                            doc.text(`[No se pudo cargar la imagen ${imgIdx + 1}]`, imgX + targetWidthPt / 2, currentY + 20, { align: 'center' });
+                            if (40 > rowMaxHeight) rowMaxHeight = 40;
                         }
-                    } catch (err) {
-                        console.error("Error adding activity image to PDF:", err);
-                        doc.setFontSize(10);
-                        doc.text(`[No se pudo cargar la imagen ${idx + 1}]`, pageWidth / 2, imgY + 20, { align: 'center' });
-                        imgY += 40;
                     }
+                    currentY += rowMaxHeight + 30; // Move to the next row
                 }
             }
 
@@ -14640,63 +14670,81 @@ async function generateExecutionReportPDF() {
             doc.setFont(undefined, 'bold');
             doc.text('Anexos - Evidencia Fotográfica', margin, 150);
 
-            let annexY = 170;
-            const maxWidth = pageWidth - (margin * 2);
+            let currentY = 170;
+            const usableWidth = pageWidth - (margin * 2);
+            const gap = 20;
+            const targetWidthPt = (usableWidth - gap) / 2;
+            const maxHeightPt = 200;
 
-            for (const item of photosToInclude) {
-                // Approximate space needed: description (wrap) + detail (wrap) + image (90) + margins
-                // We'll calculate more accurately inside
-                if (annexY > doc.internal.pageSize.getHeight() - 200) {
+            for (let idx = 0; idx < photosToInclude.length; idx += 2) {
+                if (currentY > doc.internal.pageSize.getHeight() - 250 && idx > 0) {
                     doc.addPage();
                     drawHeader();
-                    annexY = 150;
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Anexos - Evidencia Fotográfica (Cont.)', margin, 150);
+                    currentY = 170;
                 }
 
-                doc.setFontSize(10);
-                doc.setFont(undefined, 'bold');
-                const descLines = doc.splitTextToSize(`Tarea: ${item.description}`, maxWidth);
-                doc.text(descLines, margin, annexY);
-                annexY += (descLines.length * 12);
+                let rowMaxHeight = 0;
 
-                if (item.detail) {
-                    doc.setFontSize(9);
-                    doc.setFont(undefined, 'italic');
-                    const detailLines = doc.splitTextToSize(`Obs: ${item.detail}`, maxWidth);
-                    doc.text(detailLines, margin, annexY);
-                    annexY += (detailLines.length * 11);
-                }
-                annexY += 5;
+                for (let col = 0; col < 2; col++) {
+                    const imgIdx = idx + col;
+                    if (imgIdx >= photosToInclude.length) break;
 
-                try {
-                    const imgResult = await imageUrlToBase64(item.url);
-                    if (imgResult) {
-                        const maxW = 350; // Aumentado de 130 a 350 para mejor visualización
-                        const maxH = 250; // Aumentado de 90 a 250
+                    const item = photosToInclude[imgIdx];
+                    const colX = margin + col * (targetWidthPt + gap);
+                    let localY = currentY;
 
-                        let finalW = imgResult.width;
-                        let finalH = imgResult.height;
-                        const ratio = Math.min(maxW / finalW, maxH / finalH);
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'bold');
+                    const descLines = doc.splitTextToSize(`Tarea: ${item.description}`, targetWidthPt);
+                    doc.text(descLines, colX, localY);
+                    localY += (descLines.length * 12);
 
-                        finalW = finalW * ratio;
-                        finalH = finalH * ratio;
-
-                        // Centrar la imagen en el ancho de la página
-                        const centerX = margin + (maxWidth - finalW) / 2;
-                        doc.addImage(imgResult.data, 'JPEG', centerX, annexY, finalW, finalH);
-                        annexY += finalH + 15;
-                    } else {
-                        doc.setTextColor(180, 180, 180);
-                        doc.setFontSize(8);
-                        doc.text("[La imagen no se pudo cargar en el reporte. Verifique la imagen en el sistema.]", margin, annexY);
-                        doc.setTextColor(0, 0, 0);
-                        annexY += 12;
+                    if (item.detail) {
+                        doc.setFontSize(9);
+                        doc.setFont(undefined, 'italic');
+                        const detailLines = doc.splitTextToSize(`Obs: ${item.detail}`, targetWidthPt);
+                        doc.text(detailLines, colX, localY);
+                        localY += (detailLines.length * 11);
                     }
-                } catch (err) {
-                    console.error("Error adding image to PDF:", err);
-                    doc.text("[Error al procesar imagen]", margin, annexY);
-                    annexY += 15;
+                    localY += 5;
+
+                    try {
+                        const imgResult = await imageUrlToBase64(item.url, true);
+                        if (imgResult) {
+                            let finalW = targetWidthPt;
+                            let finalH = (imgResult.height * finalW) / imgResult.width;
+
+                            if (finalH > maxHeightPt) {
+                                finalH = maxHeightPt;
+                                finalW = (imgResult.width * finalH) / imgResult.height;
+                            }
+
+                            const finalX = colX + (targetWidthPt - finalW) / 2;
+                            doc.addImage(imgResult.data, 'JPEG', finalX, localY, finalW, finalH, undefined, 'FAST');
+                            localY += finalH + 15;
+                        } else {
+                            doc.setTextColor(180, 180, 180);
+                            doc.setFontSize(8);
+                            const errorLines = doc.splitTextToSize("[La imagen no se pudo cargar]", targetWidthPt);
+                            doc.text(errorLines, colX, localY);
+                            doc.setTextColor(0, 0, 0);
+                            localY += (errorLines.length * 12);
+                        }
+                    } catch (err) {
+                        console.error("Error adding image to PDF:", err);
+                        doc.text("[Error al procesar imagen]", colX, localY);
+                        localY += 15;
+                    }
+
+                    const totalBlockHeight = localY - currentY;
+                    if (totalBlockHeight > rowMaxHeight) {
+                        rowMaxHeight = totalBlockHeight;
+                    }
                 }
-                annexY += 20;
+                currentY += rowMaxHeight + 20;
             }
         }
 
@@ -20347,4 +20395,3 @@ async function handleGlobalMachinePhotoChange(event) {
 }
 window.handleVerifyTelegramConnection = handleVerifyTelegramConnection;
 window.populateSolicitudItemSelector = populateSolicitudItemSelector;
-
