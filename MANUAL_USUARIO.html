@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario - CMMS Corinfar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --secondary-color: #3b82f6;
+            --accent-color: #10b981;
+            --text-main: #334155;
+            --bg-light: #f8fafc;
+            --sidebar-width: 280px;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-light);
+            line-height: 1.6;
+        }
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem 1rem;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        .sidebar h4 {
+            color: white;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            padding-left: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar h4 i {
+            color: var(--secondary-color);
+            margin-right: 10px;
+        }
+        .sidebar a {
+            color: #94a3b8;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        .sidebar a i {
+            width: 20px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .sidebar a.active {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 4rem;
+            max-width: 1100px;
+        }
+        .card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            margin-bottom: 3rem;
+            overflow: hidden;
+        }
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 1.5rem 2rem;
+        }
+        .card-body {
+            padding: 2.5rem;
+        }
+        h2 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            font-size: 1.75rem;
+        }
+        h3 {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-top: 2rem;
+            margin-bottom: 1.25rem;
+            font-size: 1.35rem;
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 1rem;
+        }
+        .step-card {
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        .step-number {
+            background-color: var(--secondary-color);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex-grow: 1;
+        }
+        .step-content strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            color: var(--primary-color);
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: block;
+        }
+        .img-caption {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: -1rem;
+            margin-bottom: 1.5rem;
+        }
+        .kpi-badge {
+            background-color: #eff6ff;
+            color: #1e40af;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 1rem;
+            height: 100%;
+        }
+        .alert-info {
+            background-color: #f0f9ff;
+            border-color: #bae6fd;
+            color: #0369a1;
+            border-radius: 0.75rem;
+        }
+        .alert-warning {
+            background-color: #fffbeb;
+            border-color: #fef3c7;
+            color: #92400e;
+            border-radius: 0.75rem;
+        }
+        code {
+            background-color: #f1f5f9;
+            color: #e11d48;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+        }
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 2rem 1.5rem;
+            }
+        }
+        @media print {
+            .sidebar { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; }
+            .card { box-shadow: none !important; border: 1px solid #eee !important; break-inside: avoid; }
+        }
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Role badges */
+        .badge-role {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 2rem;
+            font-weight: 600;
+        }
+        .bg-operario { background-color: #dcfce7; color: #166534; }
+        .bg-tecnico { background-color: #dbeafe; color: #1e40af; }
+        .bg-admin { background-color: #fee2e2; color: #991b1b; }
+        .text-purple { color: #8e44ad !important; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar d-none d-lg-block">
+        <h4><i class="fas fa-microchip"></i> Corinfar CMMS</h4>
+        <nav class="nav flex-column">
+            <a href="#intro" class="active"><i class="fas fa-home"></i> Introducción</a>
+            <a href="#primer-ingreso"><i class="fas fa-user-lock"></i> Primer Ingreso</a>
+            <a href="#acceso"><i class="fas fa-key"></i> Acceso al Sistema</a>
+            <a href="#operario"><i class="fas fa-user-cog"></i> Guía del Operario</a>
+            <a href="#tecnico"><i class="fas fa-tools"></i> Guía del Técnico</a>
+            <a href="#supervisor"><i class="fas fa-user-tie"></i> Guía del Supervisor</a>
+            <a href="#jefe-area"><i class="fas fa-user-shield"></i> Guía del Jefe de Área</a>
+            <a href="#seguridad"><i class="fas fa-shield-alt"></i> Seguridad (21 CFR Part 11)</a>
+            <a href="#roles"><i class="fas fa-users"></i> Roles y Permisos</a>
+            <a href="#ots"><i class="fas fa-clipboard-list"></i> Órdenes de Trabajo (OT)</a>
+            <a href="#kpis"><i class="fas fa-chart-line"></i> Dashboard y KPIs</a>
+            <a href="#odoo"><i class="fas fa-sync"></i> Integración Odoo</a>
+            <a href="#mobile"><i class="fas fa-mobile-alt"></i> Diseño Móvil</a>
+            <a href="#consejos"><i class="fas fa-lightbulb"></i> Consejos Útiles</a>
+            <a href="#actualizacion-operario"><i class="fas fa-star"></i> Actualización Visual</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <header class="mb-5">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="display-4 fw-bold text-dark">Manual de Usuario</h1>
+                    <p class="lead text-secondary mb-1">Sistema de Gestión de Mantenimiento Integral - Versión 2.0</p>
+                    <p class="text-muted small mb-0">Documentación confidencial | Actualizado: junio de 2026</p>
+                </div>
+                <button onclick="window.print()" class="btn btn-outline-primary d-none d-md-block mt-3">
+                    <i class="fas fa-print me-2"></i> Imprimir Manual
+                </button>
+            </div>
+            <div class="alert alert-info d-flex align-items-center">
+                <i class="fas fa-lightbulb me-3 fa-2x"></i>
+                <div>
+                    <strong>¿Primera vez usando el sistema</strong> Esta guía está diseñada para ayudarle a familiarizarse con las funciones principales de forma rápida y sencilla.
+                </div>
+            </div>
+        </header>
+
+        <!-- Introducción -->
+        <section id="intro" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-info-circle me-3 text-primary"></i> 1. Introducción</h2>
+                </div>
+                <div class="card-body">
+                    <p>Bienvenido a la plataforma CMMS de Corinfar. Este sistema ha sido diseñado para centralizar la gestión de mantenimiento, garantizando la trazabilidad total de las operaciones y el cumplimiento de normativas de calidad (21 CFR Part 11).</p>
+                    <img src="manual_images/dashboard_light.png" alt="Dashboard Principal">
+                    <p class="img-caption">Vista principal del Dashboard con indicadores clave.</p>
+
+                    <div class="alert alert-info mt-4">
+                        <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i> Desglose de Indicadores del Dashboard</h5>
+                        <p class="mb-3">A continuación, se detalla el significado de cada tarjeta y número mostrado en la vista principal:</p>
+
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <strong><i class="fas fa-arrow-right text-primary me-2"></i> Máquinas por Criticidad:</strong> Muestra el estado global de los equipos.
+                                <ul>
+                                    <li><strong>Número Central (123):</strong> Es el número total de máquinas registradas en el sistema.</li>
+                                    <li><strong><span style="color: #10b981;">■ Verde (Baja - 32):</span></strong> Indica que hay 32 equipos con una criticidad operativa baja.</li>
+                                    <li><strong><span style="color: #f59e0b;">■ Amarillo (Media - 44):</span></strong> Indica que hay 44 equipos con una criticidad operativa media.</li>
+                                    <li><strong><span style="color: #ef4444;">■ Rojo (Alta - 47):</span></strong> Indica que hay 47 equipos críticos para la operación de la planta.</li>
+                                </ul>
+                            </li>
+                            <li class="mb-3">
+                                <strong><i class="fas fa-arrow-right text-primary me-2"></i> Preventivos (Mes Actual - ej. Junio 2026):</strong>
+                                <ul>
+                                    <li><strong>Número (77):</strong> Representa la cantidad de Mantenimientos Preventivos (MP) programados y/o ejecutados durante el mes en curso.</li>
+                                </ul>
+                            </li>
+                            <li class="mb-3">
+                                <strong><i class="fas fa-arrow-right text-primary me-2"></i> Correctivos (Mes Actual - ej. Junio 2026):</strong>
+                                <ul>
+                                    <li><strong>Número (4):</strong> Representa la cantidad de Mantenimientos Correctivos (averías imprevistas) reportados y atendidos en el mes actual. Un número bajo aquí indica un buen plan preventivo.</li>
+                                </ul>
+                            </li>
+                            <li class="mb-3">
+                                <strong><i class="fas fa-arrow-right text-primary me-2"></i> Solicitudes Pendientes:</strong>
+                                <ul>
+                                    <li><strong>Número (3):</strong> Indica la cantidad de Solicitudes de Mantenimiento (SOL) creadas por operarios o supervisores que aún no han sido convertidas en Órdenes de Trabajo (OT) ni asignadas.</li>
+                                </ul>
+                            </li>
+                            <li class="mb-3">
+                                <strong><i class="fas fa-arrow-right text-primary me-2"></i> Gasto Planificado (Mes):</strong>
+                                <ul>
+                                    <li><strong>Monto (L 12,170.22):</strong> Refleja el presupuesto estimado (en Lempiras) que se espera gastar en repuestos e insumos durante el mes en curso, basado en los planes y solicitudes aprobadas.</li>
+                                </ul>
+                            </li>
+                            <li class="mb-3">
+                                <strong><i class="fas fa-arrow-right text-primary me-2"></i> Gasto Ejecutado (Mes):</strong>
+                                <ul>
+                                    <li><strong>Monto (L 0.00):</strong> Refleja el costo real acumulado de los materiales y repuestos ya utilizados y cerrados en las Órdenes de Trabajo durante el mes actual.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Primer ingreso -->
+        <section id="primer-ingreso" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-lock me-3 text-primary"></i> 2. Primer Ingreso y Definición de Contraseña</h2>
+                </div>
+                <div class="card-body">
+                    <p>Cuando el administrador crea un usuario nuevo, el sistema genera un enlace de activación para que el usuario defina su propia contraseña. Esta contraseña solo debe conocerla el usuario; no debe ser creada, solicitada ni compartida por otra persona.</p>
+
+                    <div class="alert alert-info">
+                        <h5 class="fw-bold"><i class="fas fa-link me-2"></i> Enlace de activación</h5>
+                        <p class="mb-2">El usuario recibirá un enlace similar al siguiente:</p>
+                        <p class="mb-0"><a href="https://gestion-de-mantenimeinto.web.app/index.htmltoken=j67ysqdfzyci4liu36xe" target="_blank" rel="noopener">https://gestion-de-mantenimeinto.web.app/index.htmltoken=j67ysqdfzyci4liu36xe</a></p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Abrir el enlace recibido</strong>
+                            Ingrese al enlace de activación enviado por el administrador.
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Crear contraseña personal</strong>
+                            En la pantalla <strong>Definir Contraseña</strong>, escriba la nueva contraseña y repítala en <strong>Confirmar Contraseña</strong>.
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Guardar contraseña</strong>
+                            Presione <strong>Guardar Contraseña</strong>. Después podrá ingresar normalmente al sistema con su usuario y la contraseña que acaba de definir.
+                        </div>
+                    </div>
+
+                    <img src="manual_images/definir_contrasena.png" alt="Pantalla para definir contraseña">
+                    <p class="img-caption">Pantalla que verá el usuario al abrir el enlace de activación.</p>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-shield-alt me-2"></i> <strong>Importante:</strong> La contraseña es personal y también se usa como firma electrónica en acciones críticas del sistema.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Acceso -->
+        <section id="acceso" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-key me-3 text-primary"></i> 3. Acceso al Sistema</h2>
+                </div>
+                <div class="card-body">
+                    <p>Para ingresar al sistema, siga estos sencillos pasos:</p>
+
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Abrir el Navegador</strong>
+                            Ingrese a la dirección web proporcionada por el departamento de IT: <a href="https://gestion-de-mantenimeinto.web.app/index.html" target="_blank" rel="noopener">https://gestion-de-mantenimeinto.web.app/index.html</a>.
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Identificación</strong>
+                            En la pantalla de inicio, escriba su usuario con el formato <strong>Primer Nombre + espacio + Primer Apellido</strong>. La primera letra del nombre y del apellido debe ir en mayúscula, y no debe dejar espacios al final. Ejemplo: <strong>Ana Martinez</strong>.
+                        </div>
+                    </div>
+
+                    <img src="manual_images/acceso_sistema.png" alt="Pantalla de Acceso">
+                    <p class="img-caption">Interfaz de inicio de sesión.</p>
+
+                    <div class="alert alert-info">
+                        <h5 class="fw-bold"><i class="fas fa-undo me-2"></i> Recuperar Contraseña</h5>
+                        <p>Si ha olvidado sus credenciales, puede solicitar un restablecimiento siguiendo estos pasos:</p>
+                        <ol>
+                            <li>En la pantalla de inicio de sesión, haga clic en el enlace <strong>"¿Olvidó su contraseña"</strong>.</li>
+                            <li>Aparecerá una ventana emergente de "Recuperar Contraseña".</li>
+                            <li>Ingrese su <strong>USUARIO</strong> en el campo de texto (Ej: jperales).</li>
+                            <li>Presione el botón <strong>"Notificar al Administrador"</strong>.</li>
+                        </ol>
+                        <p>Al realizar esta acción, el administrador recibirá una notificación automática y procederá a generar un link seguro de cambio de contraseña que se le hará llegar a la brevedad.</p>
+                    </div>
+
+                    <img src="manual_images/olvido_contrasena_modal.png" alt="Recuperar Contraseña">
+                    <p class="img-caption">Ventana de solicitud de recuperación de contraseña.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Guía del Operario -->
+        <section id="operario" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-cog me-3 text-primary"></i> 4. Guía para el Operario</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Como Operario, su rol es fundamental para reportar fallas y solicitar los recursos necesarios para la producción.</p>
+
+                    <h3>4.1 Cómo realizar una Solicitud de Mantenimiento</h3>
+                    <p>Una vez que haya ingresado al sistema, encontrará un <strong>menú lateral</strong> a la izquierda de su pantalla. Para gestionar sus reportes, haga clic en la pestaña con el nombre <strong>"Solicitudes"</strong>.</p>
+
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <img src="manual_images/sidebar_solicitudes.png" alt="Menú Lateral Solicitudes">
+                            <p class="img-caption">Ubicación del módulo de Solicitudes.</p>
+                        </div>
+                        <div class="col-md-8">
+                            <p>Dentro de esta sección, podrá visualizar el historial de sus reportes y crear nuevos. Para reportar una falla o requerimiento, haga clic en el botón <span class="badge bg-primary"><i class="fas fa-plus me-1"></i> Nueva Solicitud</span>.</p>
+                        </div>
+                    </div>
+
+                    <h5>Completar el Formulario</h5>
+                    <p>Al abrirse el formulario, asegúrese de seleccionar la máquina correcta (puede buscarla por nombre o ID) y detallar de manera clara el problema detectado.</p>
+
+                    <img src="manual_images/nueva_solicitud_llena.png" alt="Ejemplo de Solicitud Llena">
+                    <p class="img-caption">Ejemplo de cómo completar correctamente una solicitud de mantenimiento.</p>
+
+                    <h5>Seguimiento en "Mis Solicitudes"</h5>
+                    <p>Una vez enviada, su solicitud aparecerá automáticamente en el listado de <strong>Mis Solicitudes</strong>. Desde aquí podrá monitorear en tiempo real los cambios de estado hasta que el trabajo sea finalizado.</p>
+
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold"><i class="fas fa-exchange-alt me-2"></i> Estados de una Solicitud:</h6>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <span class="badge bg-secondary">Pendiente</span>
+                                <span class="badge bg-warning text-dark">Planificada</span>
+                                <span class="badge bg-info text-white">En Ejecución</span>
+                                <span class="badge bg-dark">Pausada</span>
+                                <span class="badge bg-success">Pendiente de Evaluación</span>
+                                <span class="badge bg-primary">Evaluada (Finalizada)</span>
+                                <span class="badge bg-danger">Cancelada</span>
+                            </div>
+                            <p class="small text-muted mt-2 mb-0">El sistema le permite ver quién es el <strong>Técnico Líder</strong> asignado y el avance de la reparación en todo momento.</p>
+                        </div>
+                    </div>
+
+                    <h3>4.2 Cómo solicitar un Accesorio o Consumible</h3>
+                    <p>Seleccione el tipo <strong>Insumos / Accesorios</strong>. Ahora puede buscar ítems directamente del inventario por nombre o código.</p>
+
+                    <img src="manual_images/busqueda_repuestos.png" alt="Búsqueda de Repuestos">
+                    <p class="img-caption">Búsqueda en tiempo real de repuestos e insumos.</p>
+
+                    <h3>4.3 Evaluación del Trabajo Realizado</h3>
+                    <p>Cuando un técnico termina una reparación, usted debe confirmar que todo quedó bien usando el botón <strong>Evaluar</strong> en su lista de solicitudes o desde el tablero de Trabajo Activo. <em>(Vea la sección 4.4 para el detalle paso a paso)</em>.</p>
+
+                    <h3 id="ficha-equipo">Ficha del Equipo o Activo (Centro de Documentación)</h3>
+                    <p>La Ficha del Equipo es el expediente digital de la máquina. Es fundamental para conocer toda su información, historial y, sobre todo, para acceder a la <strong>documentación y manuales</strong> para su correcto uso y mantenimiento.</p>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-hand-pointer me-2"></i> <strong>Cómo acceder:</strong> Puede abrir la Ficha del Equipo haciendo clic en el nombre de la máquina resaltado en color azul en casi cualquier parte del sistema (ej. en la lista de Maquinaria, dentro de una Orden de Trabajo, o en el tablero Kanban).
+                    </div>
+
+                    <img src="manual_images/ficha_equipo_documentacion.png" alt="Ficha del Equipo y Centro de Documentación">
+                    <p class="img-caption">Vista detallada de la Ficha del Equipo con acceso a manuales en el Centro de Documentación.</p>
+
+                    <h5>Secciones Clave de la Ficha:</h5>
+                    <ul>
+                        <li><strong>Clasificación Técnica y Regulatoria:</strong> Muestra la marca, modelo, número de serie, ubicación, fechas de compra e impacto en la calidad del producto.</li>
+                        <li><strong>Estado de Calificación (IQ/OQ/PQ):</strong> Indica si el equipo está debidamente calificado para su instalación, operación y desempeño, vital para auditorías normativas.</li>
+                        <li><strong>Mantenimientos Programados e Historial:</strong> Un listado de las intervenciones (preventivos, predictivos, etc.) recientes o programadas, así como el historial de cambios de estado del equipo.</li>
+                        <li><strong>Repuestos Vinculados:</strong> Muestra los repuestos específicos que aplican a esta máquina y su nivel de inventario (Stock) actual.</li>
+                        <li><strong>Centro de Documentación:</strong> Aquí encontrará botones de acceso rápido para descargar o visualizar el <strong>Manual de Usuario</strong> (instrucciones del fabricante) y el <strong>Manual Técnico</strong> (diagramas, guías de reparación).</li>
+                    </ul>
+
+
+                    <h3 id="trabajo-activo-guia">4.4 Módulo de Trabajo Activo</h3>
+                    <p>Este módulo es su tablero de control visual. Aquí podrá ver el avance de todos los trabajos que involucran a sus <strong>equipos vinculados</strong>.</p>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-link me-2"></i> <strong>Nota:</strong> Por seguridad y orden, usted solo podrá visualizar las máquinas y solicitudes que tenga asignadas en su perfil.
+                    </div>
+
+                    <h5>Los 7 Espacios del Tablero (Kanban):</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="kpi-badge">
+                                <strong><i class="fas fa-bullhorn me-2 text-purple"></i> 1. Solicitudes Pendientes</strong><br>
+                                Reportes nuevos que están esperando ser revisados por el departamento de mantenimiento.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="kpi-badge">
+                                <strong><i class="fas fa-clock me-2 text-warning"></i> 2. Planificadas</strong><br>
+                                Trabajos que ya tienen un técnico asignado y una fecha programada de ejecución.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="kpi-badge">
+                                <strong><i class="fas fa-spinner fa-spin me-2 text-info"></i> 3. En Ejecución</strong><br>
+                                Tareas en las que el técnico está trabajando físicamente en este momento.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="kpi-badge">
+                                <strong><i class="fas fa-pause-circle me-2 text-secondary"></i> 4. Pausadas</strong><br>
+                                Trabajos detenidos temporalmente por falta de repuestos, espera de terceros o cambio de turno.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="kpi-badge">
+                                <strong><i class="fas fa-clipboard-check me-2 text-success"></i> 5. Pendiente de Evaluación</strong><br>
+                                <strong>¡Importante!</strong> El técnico ya terminó, pero el trabajo requiere su validación final.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="kpi-badge">
+                                <strong><i class="fas fa-check-double me-2 text-primary"></i> 6. Evaluadas</strong><br>
+                                Historial de trabajos cerrados y aprobados por usted y su jefe de área.
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="kpi-badge" style="border-left-color: #334155;">
+                                <strong><i class="fas fa-times-circle me-2 text-dark"></i> 7. Canceladas / No Ejecutadas</strong><br>
+                                Solicitudes que no procedieron o fueron anuladas por el administrador.
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4 fw-bold">Proceso Detallado de Evaluación</h5>
+                    <p>Para asegurar la calidad y el cumplimiento normativo, la evaluación sigue estos pasos obligatorios:</p>
+
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Validación del Planificador</strong>
+                            Antes de que el botón "Evaluar" esté disponible para usted, el Planificador debe validar la Orden de Trabajo. Si intenta evaluar antes, el sistema le avisará que está pendiente de validación.
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Criterios de Aceptación</strong>
+                            Al hacer clic en <strong>Evaluar</strong>, se desplegará una lista de criterios (ej: Limpieza del área, Equipo operativo, Entrega de herramientas). Marque los puntos que se cumplieron satisfactoriamente.
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Firma Electrónica (Obligatorio)</strong>
+                            Para finalizar, deberá ingresar su contraseña de acceso. Esta acción vincula legalmente su nombre al cierre de la solicitud (Norma 21 CFR Part 11). Sin esta firma, el trabajo no se considerará "Evaluado".
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> <strong>Recuerde:</strong> Una evaluación honesta ayuda a mejorar los tiempos de respuesta y la calidad del mantenimiento en su área.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Guía del Técnico -->
+        <section id="tecnico" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-tools me-3 text-primary"></i> 5. Guía para el Técnico</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Como Técnico, usted es el corazón operativo del sistema. Su labor no solo es reparar, sino registrar con exactitud cada acción para mantener la integridad de los activos y cumplir con las normativas de calidad.</p>
+
+                    <h3 id="tecnico-trabajo-activo">5.1 Gestión en Trabajo Activo (Kanban)</h3>
+                    <p>Su tablero principal es <strong>Trabajo Activo</strong>. Aquí gestionará sus tareas diarias de forma visual y rápida.</p>
+                    <img src="manual_images/tecnico_trabajo_activo.png" alt="Kanban Técnico">
+                    <p class="img-caption">Vista del flujo de trabajo para el técnico responsable.</p>
+
+                    <h3 id="tecnico-monitoreo">5.2 Monitoreo y Planificación</h3>
+                    <p>Antes de iniciar su jornada, el técnico dispone de dos herramientas clave para priorizar sus tareas:</p>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img src="manual_images/tecnico_monitoreo.png" alt="Monitoreo Inteligente">
+                            <p class="img-caption"><strong>Monitoreo Inteligente:</strong> Consulte los signos vitales del activo (Presión, Temperatura, etc.) antes de intervenir.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <img src="manual_images/tecnico_planificador.png" alt="Planificador Técnico">
+                            <p class="img-caption"><strong>Planificador:</strong> Visualice los mantenimientos preventivos programados para la semana en sus equipos.</p>
+                        </div>
+                    </div>
+                    <h3 id="tecnico-ficha-equipo">Ficha del Equipo o Activo (Centro de Documentación)</h3>
+                    <p>La Ficha del Equipo es el expediente digital de la máquina. Es fundamental para conocer toda su información, historial y, sobre todo, para acceder a la <strong>documentación y manuales</strong> para su correcto uso y mantenimiento.</p>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-hand-pointer me-2"></i> <strong>Cómo acceder:</strong> Puede abrir la Ficha del Equipo haciendo clic en el nombre de la máquina resaltado en color azul en casi cualquier parte del sistema (ej. en la lista de Maquinaria, dentro de una Orden de Trabajo, o en el tablero Kanban).
+                    </div>
+
+                    <img src="manual_images/ficha_equipo_documentacion.png" alt="Ficha del Equipo y Centro de Documentación">
+                    <p class="img-caption">Vista detallada de la Ficha del Equipo con acceso a manuales en el Centro de Documentación.</p>
+
+                    <h5>Secciones Clave de la Ficha:</h5>
+                    <ul>
+                        <li><strong>Clasificación Técnica y Regulatoria:</strong> Muestra la marca, modelo, número de serie, ubicación, fechas de compra e impacto en la calidad del producto.</li>
+                        <li><strong>Estado de Calificación (IQ/OQ/PQ):</strong> Indica si el equipo está debidamente calificado para su instalación, operación y desempeño, vital para auditorías normativas.</li>
+                        <li><strong>Mantenimientos Programados e Historial:</strong> Un listado de las intervenciones (preventivos, predictivos, etc.) recientes o programadas, así como el historial de cambios de estado del equipo.</li>
+                        <li><strong>Repuestos Vinculados:</strong> Muestra los repuestos específicos que aplican a esta máquina y su nivel de inventario (Stock) actual.</li>
+                        <li><strong>Centro de Documentación:</strong> Aquí encontrará botones de acceso rápido para descargar o visualizar el <strong>Manual de Usuario</strong> (instrucciones del fabricante) y el <strong>Manual Técnico</strong> (diagramas, guías de reparación).</li>
+                    </ul>
+
+
+                    <h3 id="tecnico-ejecucion-ot">5.3 Ejecución de una Orden de Trabajo (OT)</h3>
+                    <p>Las OTs pueden nacer de una falla (Correctivo) o ser generadas por un Planificador. Para iniciar el trabajo:</p>
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content"><strong>Iniciar:</strong> Presione el botón <span class="badge bg-info text-dark"><i class="fas fa-play me-1"></i> Iniciar</span> en la OT. Esto activará el cronómetro de tiempo real.</div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content"><strong>Pausar:</strong> Si debe detenerse por falta de repuestos o cambio de turno, use <span class="badge bg-warning text-dark"><i class="fas fa-pause me-1"></i> Pausar</span>. El sistema le preguntará si el equipo queda Operativo o Parado.</div>
+                    </div>
+                    <img src="manual_images/tecnico_ot_detalles.png" alt="Detalle OT Técnico">
+                    <p class="img-caption">Gestión de tiempos y descripción técnica de la labor.</p>
+
+                    <h3 id="tecnico-repuestos">5.4 Gestión de Repuestos e Insumos</h3>
+                    <p>Dentro de la OT, usted debe registrar todo lo utilizado para descargar el inventario y calcular costos.</p>
+
+                    <h5>A. Repuestos Existentes (Inventario)</h5>
+                    <p>Busque el ítem en el selector <strong>"Repuestos Utilizados"</strong>, coloque la cantidad y presione el botón verde de "+" para agregarlo a la lista de consumo.</p>
+
+                    <h5>B. Solicitud de Repuestos Externos (No en Inventario)</h5>
+                    <p>Si necesita algo que no está en el sistema o es una compra especial, use la sección <strong>"Solicitar Repuestos Externos"</strong>.</p>
+                    <img src="manual_images/tecnico_ot_repuestos_externos.png" alt="Repuestos Externos">
+                    <p class="img-caption">Formulario para solicitar materiales que no están vinculados al inventario actual.</p>
+
+                    <h3 id="tecnico-planes">5.5 Ejecución de un Plan de Mantenimiento</h3>
+                    <p>Para mantenimientos preventivos maestros (ej: <strong>Sistema de Osmosis</strong>), el sistema guía al técnico a través de un checklist obligatorio.</p>
+
+                    <p><strong>Pasos para la ejecución del Plan:</strong></p>
+                    <ol>
+                        <li><strong>Vinculación:</strong> Al abrir una OT de tipo Preventivo, presione el botón <span class="badge bg-primary"><i class="fas fa-play me-1"></i> Iniciar Plan</span>.</li>
+                        <li><strong>Tareas Secuenciales:</strong> Realice las tareas en el orden indicado (ej: 1. Verificar presión de entrada, 2. Limpieza de membranas).</li>
+                        <li><strong>Registro de Mediciones:</strong> Si la tarea solicita un valor numérico, ingréselo con precisión para el historial de tendencia.</li>
+                        <li><strong>Pausas Técnicas:</strong> Si debe retirarse del equipo, use <strong>"Pausar"</strong>. El sistema guardará el progreso de las tareas ya marcadas.</li>
+                        <li><strong>Cierre:</strong> Al completar el 100% del checklist, presione <strong>"Finalizar Ejecución"</strong>. Esto generará el informe técnico de cumplimiento.</li>
+                    </ol>
+
+                    <img src="manual_images/tecnico_ejecucion_plan_osmosis.png" alt="Ejecución Plan Osmosis">
+                    <p class="img-caption">Interfaz de ejecución del Plan de Osmosis con tareas agrupadas por subsistema.</p>
+
+                    <h3 id="tecnico-evaluacion">5.6 Finalización y Evaluación de Estrellas</h3>
+                    <p>Al terminar, presione <strong>Completar</strong>. Para que su trabajo sea calificado con <strong>5 estrellas</strong>, asegúrese de cumplir con los criterios establecidos (Limpieza, Calidad, Operatividad).</p>
+                    <img src="manual_images/tecnico_evaluacion_estrellas.png" alt="Evaluación Técnico">
+                    <p class="img-caption">Visualización de la calificación final basada en el cumplimiento de criterios.</p>
+
+                    <h3 id="tecnico-telegram">5.7 Notificaciones de Telegram</h3>
+                    <p>Usted recibirá alertas automáticas en su celular cada vez que se le asigne una nueva tarea o haya un cambio urgente en una de sus órdenes.</p>
+                    <img src="manual_images/tecnico_telegram_notif.png" alt="Notificación Telegram" style="max-width: 350px;">
+                    <p class="img-caption">Ejemplo de alerta recibida en el bot de Telegram.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Guía del Supervisor -->
+        <section id="supervisor" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-tie me-3 text-primary"></i> 6. Guía para el Supervisor de Área</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">El Supervisor de Área actúa como el enlace vital entre la producción y el departamento de mantenimiento, gestionando los equipos bajo su cargo y validando la calidad de los trabajos realizados.</p>
+
+                    <h3 id="supervisor-objetivo">6.1 Objetivo y Alcance</h3>
+                    <p>Como Supervisor, su responsabilidad principal es asegurar la disponibilidad de la maquinaria asignada a su área y supervisar que el mantenimiento se realice bajo los estándares de calidad de Corinfar.</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> <strong>Nota:</strong> Usted solo visualizará información de los <strong>equipos que tenga asignados</strong> en su perfil. Si no ve un equipo, solicite al administrador su vinculación.
+                    </div>
+
+                    <h3 id="supervisor-tablero">6.2 Tablero de Control y Planificación</h3>
+                    <p>El Supervisor debe utilizar proactivamente el módulo de <strong>Trabajo Activo</strong> (Kanban) y la pestaña <strong>Planificador</strong> para gestionar el tiempo de su área.</p>
+
+                    <img src="manual_images/supervisor_kanban.png" alt="Tablero Kanban Supervisor">
+                    <p class="img-caption">Vista del Tablero Kanban filtrado para el Supervisor con lenguaje de planta.</p>
+
+                    <h5>Estados del Trabajo (Columnas):</h5>
+                    <ul>
+                        <li><strong>Solicitudes Pendientes:</strong> Reportes de falla nuevos realizados por operarios que aún no han sido procesados por el departamento técnico.</li>
+                        <li><strong>Planificadas:</strong> Órdenes de Trabajo (OT) con fecha programada. Aquí verá prefijos como <strong>MP</strong> (Mantenimiento Preventivo) y <strong>SOL</strong> para mantenimiento general.</li>
+                        <li><strong>En Ejecución:</strong> Tareas con cronómetro activo. El código puede ser <strong>MA</strong> (Mantenimiento Activo), <strong>ME</strong> o <strong>MEC</strong> (Mecanizado) y <strong>CAL</strong> (Calibración).</li>
+                        <li><strong>Pausadas:</strong> Trabajos detenidos temporalmente (ej: espera de repuestos o herramientas). Verá el motivo específico de la pausa en la tarjeta.</li>
+                        <li><strong>Pendiente de Evaluación:</strong> El <strong>Técnico Líder</strong> ha finalizado su labor. <strong>¡Es su turno de actuar para cerrar el ciclo!</strong></li>
+                    </ul>
+
+                    <h5>Uso del Planificador:</h5>
+                    <p>En la pestaña "Planificador", las máquinas muestran el estado de sus planes mediante colores:</p>
+                    <div class="d-flex gap-3 mb-3">
+                        <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Verde: A tiempo</span>
+                        <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> Amarillo: Próximo (7 días)</span>
+                        <span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i> Rojo: Atrasado</span>
+                    </div>
+                    <img src="manual_images/supervisor_planificador.png" alt="Planificador Supervisor">
+                    <p class="img-caption">Seguimiento de planes preventivos por equipo en lenguaje de planta.</p>
+                    <h3 id="supervisor-ficha-equipo">Ficha del Equipo o Activo (Centro de Documentación)</h3>
+                    <p>La Ficha del Equipo es el expediente digital de la máquina. Es fundamental para conocer toda su información, historial y, sobre todo, para acceder a la <strong>documentación y manuales</strong> para su correcto uso y mantenimiento.</p>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-hand-pointer me-2"></i> <strong>Cómo acceder:</strong> Puede abrir la Ficha del Equipo haciendo clic en el nombre de la máquina resaltado en color azul en casi cualquier parte del sistema (ej. en la lista de Maquinaria, dentro de una Orden de Trabajo, o en el tablero Kanban).
+                    </div>
+
+                    <img src="manual_images/ficha_equipo_documentacion.png" alt="Ficha del Equipo y Centro de Documentación">
+                    <p class="img-caption">Vista detallada de la Ficha del Equipo con acceso a manuales en el Centro de Documentación.</p>
+
+                    <h5>Secciones Clave de la Ficha:</h5>
+                    <ul>
+                        <li><strong>Clasificación Técnica y Regulatoria:</strong> Muestra la marca, modelo, número de serie, ubicación, fechas de compra e impacto en la calidad del producto.</li>
+                        <li><strong>Estado de Calificación (IQ/OQ/PQ):</strong> Indica si el equipo está debidamente calificado para su instalación, operación y desempeño, vital para auditorías normativas.</li>
+                        <li><strong>Mantenimientos Programados e Historial:</strong> Un listado de las intervenciones (preventivos, predictivos, etc.) recientes o programadas, así como el historial de cambios de estado del equipo.</li>
+                        <li><strong>Repuestos Vinculados:</strong> Muestra los repuestos específicos que aplican a esta máquina y su nivel de inventario (Stock) actual.</li>
+                        <li><strong>Centro de Documentación:</strong> Aquí encontrará botones de acceso rápido para descargar o visualizar el <strong>Manual de Usuario</strong> (instrucciones del fabricante) y el <strong>Manual Técnico</strong> (diagramas, guías de reparación).</li>
+                    </ul>
+
+
+                    <h3 id="supervisor-solicitudes">6.3 Solicitudes de Insumos y Recepción</h3>
+                    <p>La trazabilidad de los materiales es crítica. El Supervisor es responsable de confirmar qué recibió físicamente.</p>
+
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Aprobación:</strong> El Jefe de Área debe autorizar su solicitud antes de que el Almacén despache.
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Confirmación de Recepción:</strong> Cuando el material llegue a planta, busque la solicitud y haga clic en <strong>Confirmar Recepción</strong>.
+                        </div>
+                    </div>
+
+                    <img src="manual_images/supervisor_recepcion_modal.png" alt="Modal de Recepción">
+                    <p class="img-caption">Confirmación de recibo mediante firma electrónica (contraseña de usuario).</p>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-file-pdf me-2"></i> <strong>Generación de PDF:</strong> Al confirmar, el sistema genera el formato oficial con las firmas digitales incrustadas.
+                    </div>
+
+                    <img src="manual_images/formato_pdf_lleno.png" alt="Formato PDF Lleno">
+                    <p class="img-caption">Ejemplo de reporte PDF generado con firmas de los involucrados.</p>
+
+                    <h3 id="supervisor-evaluacion">6.4 El Sistema de Doble Evaluación y Estrellas</h3>
+                    <p>El sistema utiliza una métrica de 1 a 5 estrellas basada en el cumplimiento de criterios de calidad.</p>
+
+                    <img src="manual_images/supervisor_evaluacion_modal.png" alt="Modal de Evaluación con Checklist">
+                    <p class="img-caption">Checklist de evaluación final para el Supervisor.</p>
+
+                    <h5>Lógica de las Estrellas:</h5>
+                    <ul>
+                        <li>Cada estrella representa un conjunto de criterios cumplidos (Limpieza, Operatividad, etc.).</li>
+                        <li><strong>Criterios Pareja (50/50):</strong> Algunos puntos requieren que tanto el Operario/Jefe como el Supervisor marquen "Cumplido".</li>
+                    </ul>
+
+                    <h5>Evaluación Parcial:</h5>
+                    <p>Si un Jefe de Área o un Operario ya evaluó, pero falta su evaluación, la tarjeta en el Kanban mostrará un estado intermedio.</p>
+
+                    <img src="manual_images/supervisor_parcialmente_evaluado.png" alt="Evaluación Parcial">
+                    <p class="img-caption">Tarjeta indicando que falta una de las dos evaluaciones obligatorias.</p>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-info">
+                                <div class="card-body">
+                                    <h5 class="fw-bold text-info"><i class="fas fa-calendar-alt me-2"></i> Preventivos (Plan)</h5>
+                                    <p class="small">Firmas: 1. Jefe de Área + 2. Supervisor.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body">
+                                    <h5 class="fw-bold text-primary"><i class="fas fa-tools me-2"></i> Correctivos (Solicitud)</h5>
+                                    <p class="small">Firmas: 1. Operario + 2. Supervisor.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger mt-4">
+                        <i class="fas fa-shield-alt me-2"></i> <strong>Cumplimiento 21 CFR Part 11:</strong> Su firma es su contraseña. Nunca la comparta. El sistema registra el segundo exacto de cada firma para auditorías de calidad.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Guía del Jefe de Área -->
+        <section id="jefe-area" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-shield me-3 text-primary"></i> 7. Guía para el Jefe de Área</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">El Jefe de Área es el máximo responsable de la operatividad y el cumplimiento de los estándares de mantenimiento en su sección, con autoridad para aprobar recursos y validar procesos críticos.</p>
+
+                    <h3 id="jefe-maquinas">7.1 Gestión de Equipos a Cargo</h3>
+                    <p>Al igual que el supervisor, el Jefe de Área tiene una visión filtrada de los activos. Usted es responsable de supervisar la disponibilidad global de las máquinas bajo su jurisdicción.</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-microchip me-2"></i> <strong>Nota:</strong> Su perfil permite visualizar métricas de rendimiento (KPIs) consolidadas para todas sus máquinas asignadas.
+                    </div>
+                    <h3 id="jefe-ficha-equipo">Ficha del Equipo o Activo (Centro de Documentación)</h3>
+                    <p>La Ficha del Equipo es el expediente digital de la máquina. Es fundamental para conocer toda su información, historial y, sobre todo, para acceder a la <strong>documentación y manuales</strong> para su correcto uso y mantenimiento.</p>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-hand-pointer me-2"></i> <strong>Cómo acceder:</strong> Puede abrir la Ficha del Equipo haciendo clic en el nombre de la máquina resaltado en color azul en casi cualquier parte del sistema (ej. en la lista de Maquinaria, dentro de una Orden de Trabajo, o en el tablero Kanban).
+                    </div>
+
+                    <img src="manual_images/ficha_equipo_documentacion.png" alt="Ficha del Equipo y Centro de Documentación">
+                    <p class="img-caption">Vista detallada de la Ficha del Equipo con acceso a manuales en el Centro de Documentación.</p>
+
+                    <h5>Secciones Clave de la Ficha:</h5>
+                    <ul>
+                        <li><strong>Clasificación Técnica y Regulatoria:</strong> Muestra la marca, modelo, número de serie, ubicación, fechas de compra e impacto en la calidad del producto.</li>
+                        <li><strong>Estado de Calificación (IQ/OQ/PQ):</strong> Indica si el equipo está debidamente calificado para su instalación, operación y desempeño, vital para auditorías normativas.</li>
+                        <li><strong>Mantenimientos Programados e Historial:</strong> Un listado de las intervenciones (preventivos, predictivos, etc.) recientes o programadas, así como el historial de cambios de estado del equipo.</li>
+                        <li><strong>Repuestos Vinculados:</strong> Muestra los repuestos específicos que aplican a esta máquina y su nivel de inventario (Stock) actual.</li>
+                        <li><strong>Centro de Documentación:</strong> Aquí encontrará botones de acceso rápido para descargar o visualizar el <strong>Manual de Usuario</strong> (instrucciones del fabricante) y el <strong>Manual Técnico</strong> (diagramas, guías de reparación).</li>
+                    </ul>
+
+
+                    <h3 id="jefe-aprobacion">7.2 Aprobación de Solicitudes de Repuestos/Insumos</h3>
+                    <p>Cualquier requerimiento de materiales realizado por un Operario o Supervisor debe ser validado por usted antes de pasar a Almacén.</p>
+
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Revisión:</strong> Ingrese a la pestaña <strong>"Solicitudes de Repuestos"</strong>. Verá una lista de pedidos con estado "Pendiente de Aprobación".
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Acción:</strong> Revise las cantidades y el motivo. Puede <strong>Aprobar</strong> o <strong>Rechazar</strong> la solicitud directamente desde la tabla.
+                        </div>
+                    </div>
+
+                    <img src="manual_images/jefe_aprobacion_insumos.png" alt="Panel de Aprobación Jefe">
+                    <p class="img-caption">Interfaz de gestión y aprobación de requerimientos de insumos.</p>
+
+                    <h3 id="jefe-evaluacion">7.3 Evaluación de MP y Doble Firma</h3>
+                    <p>Para los mantenimientos preventivos (<strong>MP</strong>), su evaluación es obligatoria para el cierre legal de la Orden de Trabajo.</p>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-check-double me-2"></i> <strong>Doble Firma (MP):</strong> Los trabajos preventivos requieren la evaluación del <strong>Jefe de Área</strong> y del <strong>Supervisor</strong>.
+                    </div>
+
+                    <img src="manual_images/jefe_evaluacion_modal.png" alt="Evaluación MP Jefe">
+                    <p class="img-caption">Modal de evaluación detallada para el Jefe de Área con criterios de calidad.</p>
+
+                    <h3 id="jefe-indicadores">7.4 Control de Planificación y KPIs</h3>
+                    <p>Utilice la pestaña <strong>Planificador</strong> para tener una vista de "ojo de águila" sobre los mantenimientos futuros y asegurar que la producción no se vea afectada por paradas no programadas.</p>
+
+                    <img src="manual_images/jefe_planificador.png" alt="Planificador Vista Jefe">
+                    <p class="img-caption">Seguimiento de cumplimiento de planes de mantenimiento preventivo.</p>
+
+                    <div class="alert alert-danger mt-4">
+                        <i class="fas fa-fingerprint me-2"></i> <strong>Responsabilidad Normativa:</strong> Su firma electrónica en la evaluación de <strong>MP</strong> certifica que el equipo es apto para continuar la producción bajo normativas de calidad.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seguridad -->
+        <section id="seguridad" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-shield-check me-3 text-primary"></i> 8. Seguridad (21 CFR Part 11)</h2>
+                </div>
+                <div class="card-body">
+                    <p>El sistema cumple con normativas internacionales para asegurar que cada acción sea rastreable y legalmente válida.</p>
+
+                    <h5>Firma Electrónica</h5>
+                    <p>Para acciones importantes, como el <strong>cierre y evaluación de una solicitud</strong>, el sistema le pedirá confirmar su identidad mediante su contraseña de acceso personal.</p>
+                    <img src="manual_images/firma_seguridad.png" alt="Seguridad y Firmas">
+                    <p class="img-caption">Interfaz de seguridad para cumplimiento de 21 CFR Part 11.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Roles -->
+        <section id="roles" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-tag me-3 text-primary"></i> 9. Roles y Permisos</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover border">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Rol</th>
+                                    <th>Identificador</th>
+                                    <th>Funciones Principales</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Admin</strong></td>
+                                    <td><span class="badge-role bg-admin">Administrador</span></td>
+                                    <td>Control total, gestión de usuarios y auditoría profunda.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Jefe de Área</strong></td>
+                                    <td><span class="badge-role bg-admin">Gestión Planta</span></td>
+                                    <td>Supervisión de activos, aprobación de solicitudes de insumos y evaluación obligatoria de mantenimientos preventivos (MP).</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Técnico</strong></td>
+                                    <td><span class="badge-role bg-tecnico">Mantenimiento</span></td>
+                                    <td>Ejecución de OTs, registro de repuestos y tiempos.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Supervisor de Área</strong></td>
+                                    <td><span class="badge-role bg-operario">Supervisor Planta</span></td>
+                                    <td>Gestión de equipos asignados, solicitudes de insumos con recepción digital y evaluación final de trabajos (Doble Firma).</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Operario</strong></td>
+                                    <td><span class="badge-role bg-operario">Usuario Planta</span></td>
+                                    <td>Reporte de fallas, solicitudes de insumos, monitoreo de trabajos activos y evaluación de servicio.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- OTs -->
+        <section id="ots" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-clipboard-list me-3 text-primary"></i> 10. Órdenes de Trabajo (OT)</h2>
+                </div>
+                <div class="card-body">
+                    <p>Las <strong>Órdenes de Trabajo (OT)</strong> son el documento digital donde se registra cada minuto invertido, cada repuesto utilizado y las observaciones del <strong>Técnico Líder</strong>.</p>
+                    <img src="manual_images/modal_ot.png" alt="Detalle de Orden de Trabajo" class="mt-4">
+                    <p class="img-caption">Formulario detallado de una Orden de Trabajo con lenguaje de planta.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- KPIs -->
+        <section id="kpis" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-line me-3 text-primary"></i> 11. Dashboard y KPIs</h2>
+                </div>
+                <div class="card-body">
+                    <p>El Dashboard ofrece métricas en tiempo real como MTBF, MTTR y Disponibilidad.</p>
+                    <img src="manual_images/dashboard_dark.png" alt="Dashboard Modo Oscuro" class="mt-4">
+                    <p class="img-caption">Dashboard en modo oscuro con indicadores de rendimiento.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Odoo -->
+        <section id="odoo" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-sync me-3 text-primary"></i> 12. Integración con Odoo</h2>
+                </div>
+                <div class="card-body">
+                    <p>El CMMS sincroniza el inventario y los costos directamente con Odoo ERP.</p>
+                    <img src="manual_images/odoo_config.png" alt="Configuración de Odoo">
+                    <p class="img-caption">Panel de configuración de la sincronización ERP.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diseño Móvil -->
+        <section id="mobile" class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-mobile-alt me-3 text-primary"></i> 13. Diseño Móvil (Responsive)</h2>
+                </div>
+                <div class="card-body">
+                    <p>La aplicación está optimizada para su uso en tablets y celulares en planta.</p>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <img src="manual_images/dashboard_mobile.png" alt="Vista Móvil" style="max-width: 300px; margin: 0 auto; display: block;">
+                            <p class="img-caption mt-3">Interfaz móvil.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Consejos para Usuarios Nuevos -->
+        <section id="consejos" class="mb-5">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h2><i class="fas fa-lightbulb me-3 text-warning"></i> 14. Consejos para Usuarios Nuevos</h2>
+                    <ul>
+                        <li><strong>Búsqueda:</strong> Use los cuadros de búsqueda para encontrar máquinas o repuestos rápidamente.</li>
+                        <li><strong>Cierre de Sesión:</strong> Siempre cierre su sesión por seguridad al terminar.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actualización Visual -->
+        <section id="actualizacion-operario" class="mb-5">
+            <div class="card border-primary" style="border-width: 2px;">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="text-white"><i class="fas fa-star me-3"></i> 15. Guía Visual Detallada: Solicitudes</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center mb-5">
+                        <div class="col-md-7">
+                            <h5>Mis Solicitudes</h5>
+                            <p>Vea el listado de sus reportes y su estado actual en tiempo real.</p>
+                        </div>
+                        <div class="col-md-5">
+                            <img src="manual_images/solicitudes_operario.png" alt="Panel Solicitudes">
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center mb-5">
+                        <div class="col-md-7 order-md-2">
+                            <h5>Detalle de la Solicitud</h5>
+                            <p>Antes de enviar, puede revisar la lista de ítems agregados y corregir cantidades.</p>
+                        </div>
+                        <div class="col-md-5 order-md-1">
+                            <img src="manual_images/solicitud_detalle.png" alt="Detalle Solicitud">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center text-muted mt-5 pb-5">
+            <hr>
+            <p>&copy; 2026 Corinfar CMMS - Sistema de Gestión de Mantenimiento<br>
+            <small>Documentación confidencial (Actualizado: junio de 2026)</small></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle broken images
+        document.querySelectorAll('img').forEach(img => {
+            img.onerror = function() {
+                this.style.display = 'none';
+                const p = document.createElement('p');
+                p.className = 'alert alert-danger';
+                p.innerHTML = '<i class="fas fa-image-slash me-2"></i> Error: No se pudo cargar la imagen "' + this.src.split('/').pop() + '".';
+                this.parentNode.insertBefore(p, this.nextSibling);
+            };
+        });
+
+        // Sidebar active state
+        window.addEventListener('scroll', () => {
+            let current = '';
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.sidebar a');
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
