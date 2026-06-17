@@ -10136,7 +10136,10 @@ function createWorkOrderCard(order, statusOverride = null) {
 
     // Attach listener for evaluation action
     if (order.status === 'Pendiente de Evaluación' || order.status === 'Completado') {
-        card.querySelector('.evaluate-task-btn').addEventListener('click', () => showEvaluationModal(order.id));
+        const evaluateBtn = card.querySelector('.evaluate-task-btn');
+        if (evaluateBtn) {
+            evaluateBtn.addEventListener('click', () => showEvaluationModal(order.id));
+        }
     }
 
     return card;
@@ -17373,6 +17376,7 @@ function renderSmartMonitoring() {
 
             // Get config for this variable
             const config = state.monitoringConfigs.find(c => c.machineId === machine.id);
+            if (!config || !config.variables) return;
             const varConfig = config.variables.find(v => v.name === key);
 
             // Skip if explicitly disabled in config
