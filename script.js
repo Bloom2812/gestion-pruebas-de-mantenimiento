@@ -10752,21 +10752,35 @@ function createAssignedOrderCard(order) {
         </div>
     `;
 
-    if (isLead) {
-        card.querySelector('.start-task-btn').addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'En Proceso'));
-        card.querySelector('.pause-task-btn').addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'Pausado'));
-        card.querySelector('.resume-task-btn').addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'En Proceso'));
-        card.querySelector('.complete-task-btn').addEventListener('click', () => {
-            showConfirmation(
-                'Finalizar Orden de Trabajo',
-                `¿Está seguro que desea marcar la orden ${order.id || `(${order.machineId})`} como finalizada`,
-                () => handleKanbanWorkOrderAction(order.fb_id, 'Completado')
-            );
-        });
-        card.querySelector('.manage-parts-btn').addEventListener('click', () => showManagePartsModal(order.id));
-        card.querySelector('.edit-details-btn').addEventListener('click', () => showWorkOrderModal(order.fb_id));
+    if (isLead || isAdminOrPlanner) {
+        const startTaskBtn = card.querySelector('.start-task-btn');
+        if (startTaskBtn) startTaskBtn.addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'En Proceso'));
+
+        const pauseTaskBtn = card.querySelector('.pause-task-btn');
+        if (pauseTaskBtn) pauseTaskBtn.addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'Pausado'));
+
+        const resumeTaskBtn = card.querySelector('.resume-task-btn');
+        if (resumeTaskBtn) resumeTaskBtn.addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'En Proceso'));
+
+        const completeTaskBtn = card.querySelector('.complete-task-btn');
+        if (completeTaskBtn) {
+            completeTaskBtn.addEventListener('click', () => {
+                showConfirmation(
+                    'Finalizar Orden de Trabajo',
+                    `¿Está seguro que desea marcar la orden ${order.id || `(${order.machineId})`} como finalizada`,
+                    () => handleKanbanWorkOrderAction(order.fb_id, 'Completado')
+                );
+            });
+        }
+
+        const managePartsBtn = card.querySelector('.manage-parts-btn');
+        if (managePartsBtn) managePartsBtn.addEventListener('click', () => showManagePartsModal(order.id));
+
+        const editDetailsBtn = card.querySelector('.edit-details-btn');
+        if (editDetailsBtn) editDetailsBtn.addEventListener('click', () => showWorkOrderModal(order.fb_id));
     } else {
-        card.querySelector('.view-details-btn').addEventListener('click', () => showWorkOrderModal(order.fb_id));
+        const viewDetailsBtn = card.querySelector('.view-details-btn');
+        if (viewDetailsBtn) viewDetailsBtn.addEventListener('click', () => showWorkOrderModal(order.fb_id));
     }
     
     card.querySelector('.card-title').addEventListener('click', () => showWorkOrderModal(order.fb_id));
@@ -19286,10 +19300,11 @@ function updateInventoryDashboard() {
     const typeMap = {};
     (state.materialOut || []).forEach(m => {
         const workOrder = state.workOrders.find(wo => wo.id === m.workOrderId);
-        const type = workOrder.type || 'No Vinculado';
+        const type = (workOrder && workOrder.type) ? workOrder.type : 'No Vinculado';
         const cost = (m.items || []).reduce((sum, item) => {
             const part = state.parts.find(p => p.id === item.partId);
-            return sum + (item.quantity * (part.cost || 0));
+            const partCost = part ? (part.cost || 0) : 0;
+            return sum + (item.quantity * partCost);
         }, 0);
         typeMap[type] = (typeMap[type] || 0) + cost;
     });
