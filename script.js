@@ -3390,7 +3390,7 @@ function createPartRowHTML(part, status) {
             </div>
         </td>
         <td>
-            <div class="small text-muted"><i class="fas fa-truck me-1"></i>${state.proveedores.find(s => s.id === part.supplierId).nombre || 'N/A'}</div>
+            <div class="small text-muted"><i class="fas fa-truck me-1"></i>${state.proveedores.find(s => s.id === part.supplierId)?.nombre || 'N/A'}</div>
         </td>
         <td>
             <div class="small text-muted"><i class="fas fa-cogs me-1"></i>${machineNames}</div>
@@ -4277,7 +4277,7 @@ function renderPartDetailHTML(part, movements) {
         });
     }
 
-    const supplierName = state.proveedores.find(s => s.id === part.supplierId).nombre || 'N/A';
+    const supplierName = state.proveedores.find(s => s.id === part.supplierId)?.nombre || 'N/A';
 
     let docsHTML = '';
     if (part.technicalDocs && part.technicalDocs.length > 0) {
@@ -10110,28 +10110,40 @@ function createWorkOrderCard(order, statusOverride = null) {
     card.querySelector('.card-title').addEventListener('click', () => showWorkOrderModal(order.fb_id));
 
     // Attach listeners for tech actions
-    card.querySelector('.view-evaluation-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        showEvaluationDetailsModal(order.fb_id);
-    });
+    const viewEvalBtn = card.querySelector('.view-evaluation-btn');
+    if (viewEvalBtn) {
+        viewEvalBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showEvaluationDetailsModal(order.fb_id);
+        });
+    }
 
     if (canAction) {
-        card.querySelector('.start-task-btn').addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'En Proceso'));
-        card.querySelector('.pause-task-btn').addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'Pausado'));
-        card.querySelector('.resume-task-btn').addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'En Proceso'));
-        card.querySelector('.complete-task-btn').addEventListener('click', () => {
-            const isPlanOrder = ['Preventivo', 'Predictivo', 'Mecanizado', 'Calibración'].includes(order.type) || order.linkedPlanId;
-            const confirmTitle = isPlanOrder ? 'Finalizar Trabajo' : 'Completar Orden de Trabajo';
-            const confirmMsg = isPlanOrder
-                ? `¿Está seguro que desea finalizar el trabajo en la orden ${order.id || `(${order.machineId})`}? Se notificará al planificador.`
-                : `¿Está seguro que desea completar la orden ${order.id || `(${order.machineId})`}`;
+        const startTaskBtn = card.querySelector('.start-task-btn');
+        if (startTaskBtn) startTaskBtn.addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'En Proceso'));
 
-             showConfirmation(
-                confirmTitle,
-                confirmMsg,
-                () => handleKanbanWorkOrderAction(order.fb_id, 'Completado')
-            );
-        });
+        const pauseTaskBtn = card.querySelector('.pause-task-btn');
+        if (pauseTaskBtn) pauseTaskBtn.addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'Pausado'));
+
+        const resumeTaskBtn = card.querySelector('.resume-task-btn');
+        if (resumeTaskBtn) resumeTaskBtn.addEventListener('click', () => handleKanbanWorkOrderAction(order.fb_id, 'En Proceso'));
+
+        const completeTaskBtn = card.querySelector('.complete-task-btn');
+        if (completeTaskBtn) {
+            completeTaskBtn.addEventListener('click', () => {
+                const isPlanOrder = ['Preventivo', 'Predictivo', 'Mecanizado', 'Calibración'].includes(order.type) || order.linkedPlanId;
+                const confirmTitle = isPlanOrder ? 'Finalizar Trabajo' : 'Completar Orden de Trabajo';
+                const confirmMsg = isPlanOrder
+                    ? `¿Está seguro que desea finalizar el trabajo en la orden ${order.id || `(${order.machineId})`}? Se notificará al planificador.`
+                    : `¿Está seguro que desea completar la orden ${order.id || `(${order.machineId})`}`;
+
+                 showConfirmation(
+                    confirmTitle,
+                    confirmMsg,
+                    () => handleKanbanWorkOrderAction(order.fb_id, 'Completado')
+                );
+            });
+        }
     }
 
     // Attach listener for evaluation action
