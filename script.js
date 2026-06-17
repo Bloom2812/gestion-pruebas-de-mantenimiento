@@ -4270,7 +4270,7 @@ function renderPartDetailHTML(part, movements) {
                     </td>
                     <td class="px-3 py-3 fw-bold ${qtyClass}">${qtyPrefix}${m.quantity}</td>
                     <td class="px-3 py-3">
-                        <span class="badge bg-light text-dark border font-monospace small" style="font-size: 0.75rem;">${m.orderHumanId || m.details.details || '-'}</span>
+                        <span class="badge bg-light text-dark border font-monospace small" style="font-size: 0.75rem;">${m.orderHumanId || m.details?.details || '-'}</span>
                     </td>
                 </tr>
             `;
