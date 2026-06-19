@@ -11017,7 +11017,8 @@ function renderCalendar() {
     const searchTerm = document.getElementById('planner-search-input').value.toLowerCase();
     if (searchTerm) {
         workOrdersToDisplay = workOrdersToDisplay.filter(wo => {
-            const machineName = state.machines.find(m => m.id === wo.machineId).name || '';
+            const machineObj = state.machines.find(m => m.id === wo.machineId);
+            const machineName = machineObj ? (machineObj.name || '') : '';
             const leadTechnician = wo.leadTechnician || '';
             return machineName.toLowerCase().includes(searchTerm) ||
                    wo.machineId.toLowerCase().includes(searchTerm) ||
