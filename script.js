@@ -2042,22 +2042,26 @@ function setupEventListeners() {
     safeAddEventListener('wo-validate-btn', 'click', async () => {
         const fbId = document.getElementById('wo-fb-id-hidden').value;
         const now = new Date().toISOString();
+        const observaciones = document.getElementById('wo-observaciones').value || "";
         // Cambiamos a Completado directamente para que los datos queden registrados para auditorías
         await saveWorkOrder({
             status: 'Completado',
             isExpired: false,
-            validatedBy: getCurrentUser().username
+            validatedBy: getCurrentUser().username,
+            observaciones: observaciones
         });
         await completeLinkedPlanExecution(fbId, now, 'Completado', getCurrentUser().username);
     });
     safeAddEventListener('wo-reject-btn', 'click', async () => {
         const fbId = document.getElementById('wo-fb-id-hidden').value;
+        const observaciones = document.getElementById('wo-observaciones').value || "";
         await saveWorkOrder({
             status: 'Pausado',
             fechaFinalizacionReal: null,
             totalWorkDurationMs: null,
             technicianFinished: false,
-            validatedBy: null
+            validatedBy: null,
+            observaciones: observaciones
         });
         showToast('Orden rechazada y devuelta a estado Pausado.', 'info');
     });
@@ -12635,7 +12639,15 @@ async function showWorkOrderModal(identifier = null, type = 'Preventivo', source
             if (order.linkedPlanId) {
                 const plan = state.workPlans.find(p => p.fb_id === order.linkedPlanId);
                 if (plan) {
-                    document.getElementById('wo-observaciones-group').classList.add('d-none');
+                    const isPendingApproval = order.status === 'Pendiente de Aprobación';
+                    const canApproveRole = ['Admin', 'Planificador', 'Jefe de Area', 'Supervisor de Area'].includes(getCurrentUser().role);
+
+                    if (!(isPendingApproval && canApproveRole)) {
+                        document.getElementById('wo-observaciones-group').classList.add('d-none');
+                    } else {
+                        document.getElementById('wo-observaciones-group').classList.remove('d-none');
+                    }
+
                     const checklistGroup = document.getElementById('wo-checklist-group');
                     checklistGroup.classList.remove('d-none');
 
@@ -12729,9 +12741,22 @@ async function showWorkOrderModal(identifier = null, type = 'Preventivo', source
     // An order is read-only if it's finished, cancelled or expired
     const isFinished = order.status === 'Completado' || order.status === 'Cancelado' || order.status === 'Rechazado' || order.status === 'Pendiente de Evaluación' || order.status === 'Pendiente de Aprobación' || order.isExpired;
 
+    const canApproveRole = ['Admin', 'Planificador', 'Jefe de Area', 'Supervisor de Area'].includes(getCurrentUser().role);
+
     if (!canControl || getCurrentUser().role === 'Invitado' || isFinished) {
-        allFields.forEach(field => field.disabled = true);
-        saveBtn.style.display = 'none';
+        allFields.forEach(field => {
+            if (order && order.status === 'Pendiente de Aprobación' && field.id === 'wo-observaciones' && canApproveRole) {
+                field.disabled = false;
+            } else {
+                field.disabled = true;
+            }
+        });
+        if (order && order.status === 'Pendiente de Aprobación' && canApproveRole) {
+            saveBtn.style.display = 'inline-block';
+            saveBtn.disabled = false;
+        } else {
+            saveBtn.style.display = 'none';
+        }
         addPartBtn.disabled = true;
         addSupportTechBtn.disabled = true;
         document.querySelectorAll('#wo-parts-list button, #wo-support-technicians-list button').forEach(btn => btn.disabled = true);
@@ -12968,11 +12993,12 @@ function updateWorkOrderModalButtons(status) {
         }
     }
 
-    if (isPlanificador) {
+    const canApproveRole = ['Admin', 'Planificador', 'Jefe de Area', 'Supervisor de Area'].includes(getCurrentUser().role);
+    if (isPlanificador || canApproveRole) {
         const hasRequest = order.solicitudId || order.sourceSolicitudId;
         const needsValidation = (isPlanOrder || hasRequest) && !order.validatedBy;
 
-        if (status === 'Pendiente de Aprobación' || (needsValidation && ['Pendiente de Evaluación', 'En Proceso', 'Pausado'].includes(status))) {
+        if (status === 'Pendiente de Aprobación' || (isPlanificador && needsValidation && ['Pendiente de Evaluación', 'En Proceso', 'Pausado'].includes(status))) {
             validateBtn.style.display = 'inline-block';
             rejectBtn.style.display = 'inline-block';
         }
