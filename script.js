@@ -6554,6 +6554,7 @@ function showTechnicianModal(techId = null) {
     const form = document.getElementById('technician-form');
     form.reset();
     const userInput = document.getElementById('technician-username');
+    const puestoInput = document.getElementById('technician-puesto');
     const passInput = document.getElementById('technician-password');
     const salaryInput = document.getElementById('technician-salary');
     const telegramIdInput = document.getElementById('technician-telegram-chat-id');
@@ -6611,6 +6612,7 @@ function showTechnicianModal(techId = null) {
         if (tech) {
             document.getElementById('technician-id-hidden').value = tech.fb_id;
             userInput.value = tech.username;
+            puestoInput.value = tech.puesto || '';
             salaryInput.value = tech.salario || '';
             roleSelect.value = tech.role;
             document.getElementById('technician-telegram-chat-id').value = tech.telegramChatId || '';
@@ -6737,6 +6739,7 @@ async function getTechnicianDataFromForm() {
 
     const techData = {
         username: document.getElementById('technician-username').value.trim(),
+        puesto: document.getElementById('technician-puesto').value.trim(),
         isActive: isActive,
         generaGasto: generaGasto,
         salario: (role === 'Operario' || role === 'Supervisor de Area' || !generaGasto) ? 0 : (parseFloat(document.getElementById('technician-salary').value) || 0),
@@ -11699,6 +11702,45 @@ async function syncWorkOrderToOdoo(orderData, fbId) {
     }
 }
 
+async function handleSignWorkOrder(fbId) {
+    const order = state.workOrders.find(o => o.fb_id === fbId);
+    if (!order) {
+        showToast('Orden no encontrada.', 'error');
+        return;
+    }
+
+    const confirmed = await new Promise(resolve => {
+        requestSignature(() => resolve(true), () => resolve(false));
+    });
+
+    if (!confirmed) return;
+
+    showLoading(true);
+    try {
+        const username = getCurrentUser().username;
+        const role = getCurrentUser().role;
+        const signatures = order.signatures || {};
+
+        let signatureRole = null;
+        if (role === 'Técnico' && order.leadTechnician === username) signatureRole = 'executor';
+        else if (role === 'Admin' || role === 'Planificador') signatureRole = 'supervisor';
+        else if (role === 'Jefe de Area') signatureRole = 'receiver';
+        else signatureRole = 'requester'; // Default fall back for soliciantes/operarios
+
+        signatures[signatureRole] = username;
+
+        const docRef = doc(state.collections.workOrders, fbId);
+        await updateDoc(docRef, { signatures: signatures });
+        await updateRTDBMirror('workOrders', { signatures }, fbId);
+        showToast('Firma agregada correctamente', 'success');
+    } catch (error) {
+        console.error("Error signing work order:", error);
+        showToast('Error al firmar orden de trabajo', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
 async function saveWorkOrder(updates = {}) {
     showLoading(true);
     try {
@@ -11847,10 +11889,11 @@ async function saveWorkOrder(updates = {}) {
             showLoading(true); // Restaurar el cargador para el proceso de guardado
         }
 
-        // 21 CFR Part 11: Re-autenticación para firma electrónica al completar/evaluar o validar
+        // 21 CFR Part 11: La evaluación y las firmas de completado se manejarán de forma separada u opcional.
+        // Solo requerimos firma si hay una validación formal.
         const isFinishing = (newStatus === 'Pendiente de Evaluación' || newStatus === 'Completado' || newStatus === 'Pendiente de Aprobación');
         const isValidating = !existingOrder.validatedBy && orderData.validatedBy;
-        if ((isFinishing && oldStatus !== newStatus) || isValidating) {
+        if (isValidating) {
             const confirmed = await new Promise(resolve => {
                 requestSignature(() => resolve(true), () => resolve(false));
             });
@@ -12502,7 +12545,9 @@ async function showWorkOrderModal(identifier = null, type = 'Preventivo', source
     const addPartBtn = document.getElementById('wo-add-part-btn');
     const addSupportTechBtn = document.getElementById('wo-add-support-technician-btn');
     const printBtn = document.getElementById('print-work-order-modal-btn');
+    const printSignatureBtn = document.getElementById('print-signature-btn');
     if (printBtn) printBtn.style.display = 'none';
+    if (printSignatureBtn) printSignatureBtn.style.display = 'none';
 
     const allFields = document.querySelectorAll('#work-order-form input, #work-order-form select, #work-order-form textarea');
     allFields.forEach(field => field.disabled = false);
@@ -12543,6 +12588,10 @@ async function showWorkOrderModal(identifier = null, type = 'Preventivo', source
             if (printBtn && order.id) {
                 printBtn.style.display = 'inline-block';
                 printBtn.onclick = () => generateSingleWorkOrderReport(order.id);
+            }
+            if (printSignatureBtn && order.id) {
+                printSignatureBtn.style.display = 'inline-block';
+                printSignatureBtn.onclick = () => handleSignWorkOrder(order.fb_id);
             }
             populateWorkOrderMachineSelector();
             document.getElementById('work-order-id-hidden').value = order.id;
@@ -13745,84 +13794,51 @@ async function generateSingleWorkOrderReport(explicitWoId = null) {
                 finalY += 40;
             }
 
-            const evals = state.technicianEvaluations.filter(ev => ev.workOrderFbId === order.fb_id);
-            const opEval = evals.find(ev => ev.evaluatorRole === 'Operario');
-            const jefeEval = evals.find(ev => ev.evaluatorRole === 'Jefe de Area');
-            const supervisorEval = evals.find(ev => ev.evaluatorRole === 'Supervisor de Area');
+            // --- Firmas al Final ---
+            const signatures = order.signatures || {};
 
             const sigWidth = (contentWidth - 60) / 4;
             const sigH = 30;
             const sigW = sigWidth - 5;
 
-            const getSignatureByUsername = (username) => {
-                if (!username || username === 'Sistema (Plan de Mantenimiento)') return null;
+            const getSignatureDataByUsername = (username) => {
+                if (!username || username === 'Sistema (Plan de Mantenimiento)') return { signature: null, puesto: 'N/A' };
                 const tech = state.technicians.find(t => t.username === username);
-                return tech ? tech.signature : null;
+                return tech ? { signature: tech.signature, puesto: tech.puesto || 'N/A' } : { signature: null, puesto: 'N/A' };
             };
 
-            // Signature 1: Ejecutado por
-            const sigExec = getSignatureByUsername(order.leadTechnician);
-            if (sigExec) {
-                try { doc.addImage(sigExec, 'PNG', margin + 2.5, finalY + 10, sigW, sigH); } catch(err){}
-            }
-            doc.line(margin, finalY + 45, margin + sigWidth, finalY + 45);
-            doc.setFontSize(7);
-            doc.text(`Ejecutado por:`, margin + sigWidth / 2, finalY + 55, { align: 'center' });
-            doc.text(`${order.leadTechnician || ''}`, margin + sigWidth / 2, finalY + 65, { align: 'center' });
-
-            // Signature 2: Recibido por (Operario o Supervisor según tipo de OT)
-            let sigLabel = 'Operario';
-            const isPlanOrder = ['Preventivo', 'Predictivo', 'Mecanizado', 'Calibración'].includes(order.type) || order.linkedPlanId;
-            const hasRequest = order.solicitudId || order.sourceSolicitudId;
-
-            let receiverName = '';
-            if (isPlanOrder) {
-                sigLabel = 'Supervisor';
-                receiverName = supervisorEval ? supervisorEval.evaluatorId : '';
-            } else {
-                receiverName = hasRequest ? (order.requester || '') : (opEval ? opEval.evaluatorId : '');
-            }
-
-            if (receiverName === 'Sistema (Plan de Mantenimiento)') receiverName = '';
-            const sigRec = getSignatureByUsername(receiverName);
-            if (sigRec) {
-                try { doc.addImage(sigRec, 'PNG', margin + sigWidth + 20 + 2.5, finalY + 10, sigW, sigH); } catch(err){}
-            }
-            doc.line(margin + sigWidth + 20, finalY + 45, margin + 2 * sigWidth + 20, finalY + 45);
-            doc.text(`${sigLabel}:`, margin + sigWidth + 20 + sigWidth / 2, finalY + 55, { align: 'center' });
-            doc.text(`${receiverName}`, margin + sigWidth + 20 + sigWidth / 2, finalY + 65, { align: 'center' });
-
-            // Signature 3: Jefe de Mantenimiento (Planner/Admin, WITH name)
-            const validatorName = order.validatedBy || '';
-            const sigVal = getSignatureByUsername(validatorName);
-            if (sigVal) {
-                try { doc.addImage(sigVal, 'PNG', margin + 2 * (sigWidth + 20) + 2.5, finalY + 10, sigW, sigH); } catch(err){}
-            }
-            doc.line(margin + 2 * (sigWidth + 20), finalY + 45, margin + 3 * sigWidth + 40, finalY + 45);
-            doc.text(`Jefe de Mantenimiento:`, margin + 2 * (sigWidth + 20) + sigWidth / 2, finalY + 55, { align: 'center' });
-            doc.text(`${validatorName}`, margin + 2 * (sigWidth + 20) + sigWidth / 2, finalY + 65, { align: 'center' });
-
-            // Signature 4: Jefe de área / Supervisor (Area Head evaluator, WITH name)
-            let jefeLabel = 'Jefe de área';
-            let jefeName = '';
-            if (isPlanOrder) {
-                jefeName = jefeEval ? jefeEval.evaluatorId : '';
-            } else {
-                if (supervisorEval) {
-                    jefeLabel = 'Supervisor';
-                    jefeName = supervisorEval.evaluatorId;
-                } else {
-                    jefeName = jefeEval ? jefeEval.evaluatorId : '';
+            // Helpers for drawing a signature block
+            const drawSignatureBlock = (label, name, sigData, xOffset) => {
+                if (sigData.signature && name !== 'N/A') {
+                    try { doc.addImage(sigData.signature, 'PNG', xOffset + 2.5, finalY + 10, sigW, sigH); } catch(err){}
                 }
-            }
+                doc.line(xOffset, finalY + 45, xOffset + sigWidth, finalY + 45);
+                doc.setFontSize(7);
+                doc.text(label, xOffset + sigWidth / 2, finalY + 55, { align: 'center' });
+                doc.text(name, xOffset + sigWidth / 2, finalY + 65, { align: 'center' });
+            };
 
-            const sigJefe = getSignatureByUsername(jefeName);
-            if (sigJefe) {
-                try { doc.addImage(sigJefe, 'PNG', margin + 3 * (sigWidth + 20) + 2.5, finalY + 10, sigW, sigH); } catch(err){}
-            }
-            doc.line(margin + 3 * (sigWidth + 20), finalY + 45, pageWidth - margin, finalY + 45);
-            doc.text(`${jefeLabel}:`, margin + 3 * (sigWidth + 20) + sigWidth / 2, finalY + 55, { align: 'center' });
-            doc.text(`${jefeName}`, margin + 3 * (sigWidth + 20) + sigWidth / 2, finalY + 65, { align: 'center' });
+            // Firma 1: Ejecutado por
+            const execUsername = signatures.executor || order.leadTechnician || 'N/A';
+            const sigExecData = getSignatureDataByUsername(execUsername);
+            const execLabel = execUsername !== 'N/A' && sigExecData.puesto !== 'N/A' ? `Ejecutó (${sigExecData.puesto}):` : `Ejecutó:`;
+            drawSignatureBlock(execLabel, execUsername, sigExecData, margin);
+
+            // Firma 2: Supervisor / Validador
+            const supUsername = signatures.supervisor || order.validatedBy || 'N/A';
+            const sigSupData = getSignatureDataByUsername(supUsername);
+            drawSignatureBlock(`Jefe de Mantenimiento:`, supUsername, sigSupData, margin + sigWidth + 20);
+
+            // Firma 3: Solicitante
+            const reqUsername = signatures.requester || order.requester || 'N/A';
+            const sigReqData = getSignatureDataByUsername(reqUsername);
+            const reqLabel = reqUsername !== 'N/A' && sigReqData.puesto !== 'N/A' ? `${sigReqData.puesto}:` : `Solicitante:`;
+            drawSignatureBlock(reqLabel, reqUsername, sigReqData, margin + 2 * (sigWidth + 20));
+
+            // Firma 4: Recibe (Jefe de Area)
+            const recUsername = signatures.receiver || 'N/A';
+            const sigRecData = getSignatureDataByUsername(recUsername);
+            drawSignatureBlock(`Recibió (Jefe de Área):`, recUsername, sigRecData, margin + 3 * (sigWidth + 20));
             
             // --- Anexos Fotográficos ---
             if (order.images && order.images.length > 0) {
@@ -16598,6 +16614,7 @@ window.populateDynamicSelectors = populateDynamicSelectors;
 window.populateWorkOrderSelectors = populateWorkOrderSelectors;
 window.populateExecutionReportSelector = populateExecutionReportSelector;
 window.generateSingleWorkOrderReport = generateSingleWorkOrderReport;
+window.handleSignWorkOrder = handleSignWorkOrder;
 window.showMachineHistory = showMachineHistory;
 window.generateFichaMaestra = generateFichaMaestra;
 window.requestSignature = requestSignature;
