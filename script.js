@@ -12789,7 +12789,7 @@ async function showWorkOrderModal(identifier = null, type = 'Preventivo', source
     const canExecute = userRole === 'Admin' || userRole === 'Planificador' || isLeadTechnician;
 
     // An order is read-only if it's finished, cancelled or expired
-    const isFinished = order.status === 'Completado' || order.status === 'Cancelado' || order.status === 'Rechazado' || order.status === 'Pendiente de Evaluación' || order.status === 'Pendiente de Aprobación' || order.isExpired;
+    const isFinished = order ? (order.status === 'Completado' || order.status === 'Cancelado' || order.status === 'Rechazado' || order.status === 'Pendiente de Evaluación' || order.status === 'Pendiente de Aprobación' || order.isExpired) : false;
 
     const canApproveRole = ['Admin', 'Planificador', 'Jefe de Area', 'Supervisor de Area'].includes(getCurrentUser().role);
 
