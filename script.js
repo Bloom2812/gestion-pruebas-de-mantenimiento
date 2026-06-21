@@ -13807,15 +13807,33 @@ async function generateSingleWorkOrderReport(explicitWoId = null) {
                 return tech ? { signature: tech.signature, puesto: tech.puesto || 'N/A' } : { signature: null, puesto: 'N/A' };
             };
 
+            const renderedSignatures = new Set();
+
             // Helpers for drawing a signature block
             const drawSignatureBlock = (label, name, sigData, xOffset) => {
-                if (sigData.signature && name !== 'N/A') {
-                    try { doc.addImage(sigData.signature, 'PNG', xOffset + 2.5, finalY + 10, sigW, sigH); } catch(err){}
+                let displayName = name;
+                let showSignature = true;
+
+                if (!name || name === 'N/A' || !sigData.signature) {
+                    displayName = 'N/A';
+                    showSignature = false;
+                } else if (renderedSignatures.has(name)) {
+                    displayName = 'N/A';
+                    showSignature = false;
                 }
+
+                if (showSignature) {
+                    try { doc.addImage(sigData.signature, 'PNG', xOffset + 2.5, finalY + 10, sigW, sigH); } catch(err){}
+                    renderedSignatures.add(name);
+                } else {
+                    doc.setFontSize(10);
+                    doc.text('N/A', xOffset + sigWidth / 2, finalY + 30, { align: 'center' });
+                }
+
                 doc.line(xOffset, finalY + 45, xOffset + sigWidth, finalY + 45);
                 doc.setFontSize(7);
                 doc.text(label, xOffset + sigWidth / 2, finalY + 55, { align: 'center' });
-                doc.text(name, xOffset + sigWidth / 2, finalY + 65, { align: 'center' });
+                doc.text(displayName, xOffset + sigWidth / 2, finalY + 65, { align: 'center' });
             };
 
             // Firma 1: Ejecutado por
@@ -14663,32 +14681,45 @@ async function generateExecutionReportPDF() {
         const jefeEval = state.technicianEvaluations.find(ev => ev.workOrderFbId === execution.workOrderFbId && ev.evaluatorRole === 'Jefe de Area');
         const evaluatorName = jefeEval ? jefeEval.evaluatorId : '';
 
-        doc.setFontSize(8);
+        const renderedSignatures = new Set();
+
+        const drawSignatureBlockExec = (label, name, sigData, xOffset, yOffset) => {
+            let displayName = name;
+            let showSignature = true;
+
+            if (!name || name === 'N/A' || !sigData) {
+                displayName = 'N/A';
+                showSignature = false;
+            } else if (renderedSignatures.has(name)) {
+                displayName = 'N/A';
+                showSignature = false;
+            }
+
+            if (showSignature) {
+                try { doc.addImage(sigData, 'PNG', xOffset + (sigWidth / 2) - (sigW / 2), yOffset - 40, sigW, sigH); } catch(err){}
+                renderedSignatures.add(name);
+            } else {
+                doc.setFontSize(10);
+                doc.text('N/A', xOffset + sigWidth / 2, yOffset - 20, { align: 'center' });
+            }
+
+            doc.line(xOffset, yOffset, xOffset + sigWidth, yOffset);
+            doc.setFontSize(8);
+            doc.text(label, xOffset + sigWidth / 2, yOffset + 15, { align: 'center' });
+            doc.text(displayName, xOffset + sigWidth / 2, yOffset + 25, { align: 'center' });
+        };
 
         // Signature 1: Ejecutado por
         const sigExec = getSignatureByUsername(execution.executedBy);
-        if (sigExec) {
-            try { doc.addImage(sigExec, 'PNG', margin + 5, signatureY - 40, sigW, sigH); } catch(err){}
-        }
-        doc.line(margin, signatureY, margin + sigWidth, signatureY);
-        doc.text(`Ejecutado por: ${execution.executedBy || ''}`, margin, signatureY + 15);
+        drawSignatureBlockExec(`Ejecutado por:`, execution.executedBy || 'N/A', sigExec, margin, signatureY);
 
-        // Signature 2: Jefe de Mantenimiento (WITH name)
+        // Signature 2: Jefe de Mantenimiento
         const sigRec = getSignatureByUsername(execution.validatedBy);
-        if (sigRec) {
-            try { doc.addImage(sigRec, 'PNG', margin + sigWidth + 25, signatureY - 40, sigW, sigH); } catch(err){}
-        }
-        doc.line(margin + sigWidth + 20, signatureY, margin + 2 * sigWidth + 20, signatureY);
-        doc.text(`Jefe de Mantenimiento:`, margin + sigWidth + 20, signatureY + 15);
-        doc.text(`${execution.validatedBy || ''}`, margin + sigWidth + 20, signatureY + 25);
+        drawSignatureBlockExec(`Jefe de Mantenimiento:`, execution.validatedBy || 'N/A', sigRec, margin + sigWidth + 20, signatureY);
 
         // Signature 3: Jefe de área
         const sigJefe = getSignatureByUsername(evaluatorName);
-        if (sigJefe) {
-            try { doc.addImage(sigJefe, 'PNG', margin + 2 * sigWidth + 45, signatureY - 40, sigW, sigH); } catch(err){}
-        }
-        doc.line(margin + 2 * sigWidth + 40, signatureY, pageWidth - margin, signatureY);
-        doc.text(`Jefe de área: ${evaluatorName}`, margin + 2 * sigWidth + 40, signatureY + 15);
+        drawSignatureBlockExec(`Jefe de área:`, evaluatorName || 'N/A', sigJefe, margin + 2 * sigWidth + 40, signatureY);
 
         // --- PDF Annexes (Photos) ---
         const photosToInclude = [];
