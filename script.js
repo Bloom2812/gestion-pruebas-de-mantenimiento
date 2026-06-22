@@ -13674,36 +13674,59 @@ async function generateSingleWorkOrderReport(explicitWoId = null) {
 
             drawHeader();
             
-            drawBoxWithValue(margin, 120, contentWidth * 0.4, 30, 'Código Máquina', machine.id);
-            drawBoxWithValue(margin + contentWidth * 0.4 + 10, 120, contentWidth * 0.6 - 10, 30, 'Máquina', `${machine.name} - Departamento: ${machine.location || 'N/A'}`);
+            drawBoxWithValue(margin, 120, contentWidth * 0.4, 40, 'Código Máquina', machine.id);
+
+            const boxX = margin + contentWidth * 0.4 + 10;
+            const boxY = 120;
+            const boxW = contentWidth * 0.6 - 10;
+            const boxH = 40;
+            doc.setLineWidth(0.5);
+            doc.rect(boxX, boxY, boxW, boxH);
+
+            doc.setFontSize(8);
+            doc.setFont(undefined, 'normal');
+            doc.text('Máquina: ', boxX + 3, boxY + 15);
+            let textWidth1 = doc.getTextWidth('Máquina: ');
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text(machine.name || 'N/A', boxX + 3 + textWidth1, boxY + 15);
+
+            doc.setFontSize(8);
+            doc.setFont(undefined, 'normal');
+            doc.text('Departamento: ', boxX + 3, boxY + 32);
+            let textWidth2 = doc.getTextWidth('Departamento: ');
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text(machine.location || 'N/A', boxX + 3 + textWidth2, boxY + 32);
+            doc.setFont(undefined, 'normal');
             
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
-            doc.text(`Número de Orden: ${order.id} - Prioridad ${machine.criticidad || 'N/A'}`, margin, 175);
+            doc.text(`Número de Orden: ${order.id} - Prioridad ${machine.criticidad || 'N/A'}`, margin, 185);
 
-            drawBoxWithValue(margin, 190, contentWidth / 2 - 5, 30, 'Clase de Mantenimiento', order.type);
-            drawBoxWithValue(margin + contentWidth / 2 + 5, 190, contentWidth / 2 - 5, 30, 'Tipo de Falla', order.failureType || 'N/A');
+            drawBoxWithValue(margin, 200, contentWidth / 2 - 5, 30, 'Clase de Mantenimiento', order.type);
+            drawBoxWithValue(margin + contentWidth / 2 + 5, 200, contentWidth / 2 - 5, 30, 'Tipo de Falla', order.failureType || 'N/A');
 
             const requestDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('es-ES') : 'N/A';
             const solicitudRefId = order.solicitudId || order.sourceSolicitudId;
             const solicitudRef = solicitudRefId ? state.solicitudes.find(s => s.id === solicitudRefId || s.fb_id === solicitudRefId) : null;
             const humanSolicitudId = solicitudRef ? solicitudRef.id : order.solicitudId;
             const requesterDisplay = humanSolicitudId ? `${order.requester || 'N/A'} (Solicitud: ${humanSolicitudId})` : (order.requester || 'N/A');
-            drawBoxWithValue(margin, 230, contentWidth / 2 - 5, 30, 'Solicitado por:', requesterDisplay);
-            drawBoxWithValue(margin + contentWidth / 2 + 5, 230, contentWidth / 2 - 5, 30, 'Fecha de Solicitud:', requestDate);
+            drawBoxWithValue(margin, 240, contentWidth / 2 - 5, 30, 'Solicitado por:', requesterDisplay);
+            drawBoxWithValue(margin + contentWidth / 2 + 5, 240, contentWidth / 2 - 5, 30, 'Fecha de Solicitud:', requestDate);
 
             // Dynamic Description Box
             const descText = order.description || 'N/A';
             const descLines = doc.splitTextToSize(descText, contentWidth - 10);
             const descBoxHeight = Math.max(40, (descLines.length * 12) + 25);
-            doc.rect(margin, 270, contentWidth, descBoxHeight);
+            doc.rect(margin, 280, contentWidth, descBoxHeight);
             doc.setFontSize(8);
-            doc.text('Descripción de la actividad solicitada:', margin + 3, 280);
+            doc.text('Descripción de la actividad solicitada:', margin + 3, 290);
             doc.setFontSize(10);
             doc.setFont(undefined, 'normal');
-            doc.text(descLines, margin + 5, 295);
+            doc.text(descLines, margin + 5, 305);
             
-            let currentY = 270 + descBoxHeight + 10;
+            let currentY = 280 + descBoxHeight + 10;
 
             const startTimestamp = order.fechaInicioReal || order.startTime;
             const startDate = startTimestamp ? new Date(startTimestamp).toLocaleDateString('es-ES') : (order.date || 'N/A');
