@@ -1376,6 +1376,7 @@ label[for="wo-real-end-time"] {
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
+    overflow: hidden;
 }
 
 .execution-view-header {
@@ -1387,6 +1388,8 @@ label[for="wo-real-end-time"] {
     justify-content: space-between;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     z-index: 10;
+    flex-shrink: 0;
+    min-width: 0;
 }
 
 .execution-view-header h2 {
@@ -1755,6 +1758,7 @@ body.dark-mode .execution-task-fallo-row {
 .execution-view-container {
     max-width: none;
     background: #f8fafc;
+    overflow: hidden;
 }
 
 .execution-view-header {
@@ -1767,6 +1771,8 @@ body.dark-mode .execution-task-fallo-row {
     padding: 1.25rem 2rem 1rem;
     border-bottom: 1px solid #e2e8f0;
     box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+    flex-shrink: 0;
+    min-width: 0;
 }
 
 .execution-view-header > .d-flex:first-child {
@@ -1794,6 +1800,7 @@ body.dark-mode .execution-task-fallo-row {
     line-height: 1.15;
     letter-spacing: 0;
     overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 #execution-view-subtitle {
@@ -1907,6 +1914,8 @@ body.dark-mode .execution-task-fallo-row {
 .execution-view-content {
     padding: 2rem 2.5rem 7rem;
     background: #f8fafc;
+    flex: 1;
+    overflow-y: auto;
 }
 
 #execution-view-body {
@@ -2289,10 +2298,21 @@ body.dark-mode .execution-card-item textarea {
 @media (max-width: 768px) {
     .execution-view-header {
         padding: 1rem;
+        min-width: 0;
+    }
+
+    .execution-view-header > .d-flex:first-child {
+        min-width: 0;
+    }
+
+    .execution-view-header > .d-flex:first-child > div:last-child {
+        min-width: 0;
     }
 
     .execution-view-header h2 {
         font-size: 1.25rem;
+        word-break: break-word;
+        overflow-wrap: break-word;
     }
 
     .execution-card-item > .d-flex:first-child {
