@@ -8816,6 +8816,7 @@ function addTaskGroup(name = '', layout = 'table', tasks = []) {
     });
 
     const addTaskItem = (task = null) => {
+        task = task || {};
         const taskEl = document.createElement('div');
         taskEl.className = 'border rounded p-2 mb-2 bg-white shadow-sm task-item d-flex align-items-start';
         taskEl.innerHTML = `
