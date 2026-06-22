@@ -8512,7 +8512,7 @@ function renderWorkPlanDetails(planId) {
     const freqText = `Cada ${plan.frequencyValue || 1} ${freqMap[plan.frequencyUnit] || 'Mes(es)'}`;
     const nextDate = plan.nextDueDate ? new Date(plan.nextDueDate + 'T00:00:00').toLocaleDateString('es-ES') : 'N/A';
     const machinePhoto = machine.fotoUrl || machine.imageUrl || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158q=80&w=800';
-    const lastExecutionDate = formatWorkPlanDate(runtime.lastExecution.executedAt || runtime.lastExecution.startedAt, true);
+    const lastExecutionDate = runtime.lastExecution ? formatWorkPlanDate(runtime.lastExecution.executedAt || runtime.lastExecution.startedAt, true) : 'Sin registro';
     const createdDate = formatWorkPlanDate(plan.createdAt);
     const updatedDate = plan.updatedAt ? formatWorkPlanDate(plan.updatedAt, true) : lastExecutionDate;
     const createdBy = getWorkPlanCreatorDisplay(plan);
