@@ -13694,9 +13694,30 @@ async function generateSingleWorkOrderReport(explicitWoId = null) {
                 doc.rect(x, y, w, h);
                 doc.setFontSize(8);
                 doc.text(label, x + 3, y + 10);
-                doc.setFontSize(10);
+
                 doc.setFont(undefined, 'bold');
-                doc.text(value || 'N/A', x + 3, y + 25);
+
+                let textValue = value || 'N/A';
+                let fontSize = 10;
+                doc.setFontSize(fontSize);
+
+                let textLines = doc.splitTextToSize(textValue, w - 6);
+
+                // Reduce font size until it fits in 2 lines or max reduction
+                while (textLines.length > 2 && fontSize > 5) {
+                    fontSize -= 0.5;
+                    doc.setFontSize(fontSize);
+                    textLines = doc.splitTextToSize(textValue, w - 6);
+                }
+
+                // Print the text
+                if (textLines.length === 1) {
+                    doc.text(textLines[0], x + 3, y + 25);
+                } else {
+                    doc.text(textLines[0], x + 3, y + 19);
+                    doc.text(textLines[1], x + 3, y + 28);
+                }
+
                 doc.setFont(undefined, 'normal');
             };
 
